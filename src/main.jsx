@@ -17,6 +17,9 @@ import DashboardConventions from './pages/DashboardConventions.jsx'
 import DashboardActualites from './pages/DashboardActualites.jsx'
 import DashboardHome from './pages/DashboardHome.jsx'
 import DashboardKnowledge from './pages/DashboardKnowledge.jsx'
+import DashboardOrganigramme from './pages/DashboardOrganigramme.jsx'
+import DashboardResponsables from './pages/DashboardResponsables.jsx'
+import DashboardAttribution from './pages/DashboardAttribution.jsx'
 import './index.css'
 
 ReactDOM.createRoot(document.getElementById('root')).render(
@@ -38,6 +41,12 @@ ReactDOM.createRoot(document.getElementById('root')).render(
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/dashboard/home" element={<DashboardHome />} />
         <Route path="/dashboard/knowledge" element={<DashboardKnowledge />} />
+        
+        {/* DGES Management */}
+        <Route path="/dashboard/organigramme" element={<DashboardOrganigramme />} />
+        <Route path="/dashboard/responsables" element={<DashboardResponsables />} />
+        <Route path="/dashboard/attribution" element={<DashboardAttribution />} />
+        
         <Route path="/dashboard/etablissements" element={<DashboardEtablissements />} />
         <Route path="/dashboard/etablissements-publics" element={<DashboardEtablissements />} />
         <Route path="/dashboard/etablissements-prives" element={<DashboardEtablissements />} />
