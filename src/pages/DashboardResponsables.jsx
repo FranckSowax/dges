@@ -1,29 +1,68 @@
-import React, { useState } from 'react';
-import { User, Plus, Edit2, Trash2, X } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { User, Plus, Edit2, Trash2, X, Loader } from 'lucide-react';
 import DashboardLayout from '../layouts/DashboardLayout';
+import { supabase } from '../supabaseClient';
 
 const DashboardResponsables = () => {
-  const [responsables, setResponsables] = useState([
-    { id: 1, name: "M. Le Directeur", role: "Directeur Général", email: "dg@dges.ga" },
-    { id: 2, name: "Mme L'Adjointe", role: "DGA", email: "dga@dges.ga" }
-  ]);
-
+  const [responsables, setResponsables] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [isEditing, setIsEditing] = useState(false);
   const [currentResp, setCurrentResp] = useState(null);
 
+  useEffect(() => {
+    fetchResponsables();
+  }, []);
+
+  const fetchResponsables = async () => {
+    setLoading(true);
+    const { data, error } = await supabase.from('responsables').select('*').order('rank', { ascending: true });
+    if (error) console.error('Error fetching responsables:', error);
+    else setResponsables(data || []);
+    setLoading(false);
+  };
+
   const handleAdd = () => {
-    setCurrentResp({ id: null, name: '', role: '', email: '' });
+    setCurrentResp({ name: '', role: '', email: '', rank: responsables.length + 1 });
     setIsEditing(true);
   };
 
-  const handleSave = (e) => {
+  const handleSave = async (e) => {
     e.preventDefault();
-    if (currentResp.id) {
+    try {
+      if (currentResp.id) {
+        // Update
+        const { error } = await supabase
+            .from('responsables')
+            .update({ name: currentResp.name, role: currentResp.role, email: currentResp.email })
+            .eq('id', currentResp.id);
+        if (error) throw error;
         setResponsables(responsables.map(r => r.id === currentResp.id ? currentResp : r));
-    } else {
-        setResponsables([...responsables, { ...currentResp, id: Date.now() }]);
+      } else {
+        // Create
+        const { data, error } = await supabase
+            .from('responsables')
+            .insert([{ 
+                name: currentResp.name, 
+                role: currentResp.role, 
+                email: currentResp.email,
+                rank: currentResp.rank
+            }])
+            .select();
+        if (error) throw error;
+        setResponsables([...responsables, data[0]]);
+      }
+      setIsEditing(false);
+    } catch (error) {
+      console.error("Save error:", error);
+      alert("Erreur lors de l'enregistrement");
     }
-    setIsEditing(false);
+  };
+  
+  const handleDelete = async (id) => {
+      if(confirm('Supprimer ce responsable ?')) {
+          const { error } = await supabase.from('responsables').delete().eq('id', id);
+          if (!error) setResponsables(responsables.filter(r => r.id !== id));
+      }
   };
 
   return (
@@ -43,29 +82,35 @@ const DashboardResponsables = () => {
       </div>
 
       <div className="bg-white rounded-2xl shadow-sm border border-neutral-gray-light overflow-hidden">
-        <table className="w-full">
-          <thead className="bg-neutral-background border-b border-neutral-gray-light">
-            <tr>
-              <th className="px-6 py-4 text-left text-sm font-semibold text-neutral-gray-dark">Nom</th>
-              <th className="px-6 py-4 text-left text-sm font-semibold text-neutral-gray-dark">Rôle</th>
-              <th className="px-6 py-4 text-left text-sm font-semibold text-neutral-gray-dark">Email</th>
-              <th className="px-6 py-4 text-right text-sm font-semibold text-neutral-gray-dark">Actions</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-neutral-gray-light">
-            {responsables.map((resp) => (
-              <tr key={resp.id} className="hover:bg-neutral-background/50">
-                <td className="px-6 py-4 font-medium">{resp.name}</td>
-                <td className="px-6 py-4 text-neutral-gray-dark">{resp.role}</td>
-                <td className="px-6 py-4 text-neutral-gray-dark">{resp.email}</td>
-                <td className="px-6 py-4 text-right flex justify-end gap-2">
-                  <button onClick={() => { setCurrentResp(resp); setIsEditing(true); }} className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg"><Edit2 className="w-4 h-4" /></button>
-                  <button onClick={() => setResponsables(responsables.filter(r => r.id !== resp.id))} className="p-2 text-red-600 hover:bg-red-50 rounded-lg"><Trash2 className="w-4 h-4" /></button>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+        {loading ? (
+            <div className="text-center py-10"><Loader className="animate-spin w-8 h-8 mx-auto text-gabon-green"/></div>
+        ) : responsables.length === 0 ? (
+            <div className="text-center py-10 text-neutral-gray-dark">Aucun responsable trouvé.</div>
+        ) : (
+            <table className="w-full">
+            <thead className="bg-neutral-background border-b border-neutral-gray-light">
+                <tr>
+                <th className="px-6 py-4 text-left text-sm font-semibold text-neutral-gray-dark">Nom</th>
+                <th className="px-6 py-4 text-left text-sm font-semibold text-neutral-gray-dark">Rôle</th>
+                <th className="px-6 py-4 text-left text-sm font-semibold text-neutral-gray-dark">Email</th>
+                <th className="px-6 py-4 text-right text-sm font-semibold text-neutral-gray-dark">Actions</th>
+                </tr>
+            </thead>
+            <tbody className="divide-y divide-neutral-gray-light">
+                {responsables.map((resp) => (
+                <tr key={resp.id} className="hover:bg-neutral-background/50">
+                    <td className="px-6 py-4 font-medium">{resp.name}</td>
+                    <td className="px-6 py-4 text-neutral-gray-dark">{resp.role}</td>
+                    <td className="px-6 py-4 text-neutral-gray-dark">{resp.email}</td>
+                    <td className="px-6 py-4 text-right flex justify-end gap-2">
+                    <button onClick={() => { setCurrentResp(resp); setIsEditing(true); }} className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg"><Edit2 className="w-4 h-4" /></button>
+                    <button onClick={() => handleDelete(resp.id)} className="p-2 text-red-600 hover:bg-red-50 rounded-lg"><Trash2 className="w-4 h-4" /></button>
+                    </td>
+                </tr>
+                ))}
+            </tbody>
+            </table>
+        )}
       </div>
 
       {isEditing && (
@@ -87,5 +132,6 @@ const DashboardResponsables = () => {
     </DashboardLayout>
   );
 };
+
 
 export default DashboardResponsables;

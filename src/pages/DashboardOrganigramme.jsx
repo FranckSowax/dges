@@ -1,21 +1,32 @@
-import React, { useState } from 'react';
-import { Users, Plus, Edit2, Trash2, Save, X } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { Users, Plus, Edit2, Trash2, Save, X, Loader } from 'lucide-react';
 import DashboardLayout from '../layouts/DashboardLayout';
+import { supabase } from '../supabaseClient';
 
 const DashboardOrganigramme = () => {
-  const [nodes, setNodes] = useState([
-    { id: 1, title: "Directeur Général", type: "Direction", parent: null },
-    { id: 2, title: "Directeur Général Adjoint", type: "Direction", parent: 1 },
-    { id: 3, title: "Service Courrier", type: "Service", parent: 1 },
-    { id: 4, title: "Direction de l'Orientation", type: "Direction", parent: 1 },
-    { id: 5, title: "Service Bourses", type: "Service", parent: 4 }
-  ]);
-
+  const [nodes, setNodes] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [isEditing, setIsEditing] = useState(false);
   const [currentNode, setCurrentNode] = useState(null);
 
+  useEffect(() => {
+    fetchNodes();
+  }, []);
+
+  const fetchNodes = async () => {
+    setLoading(true);
+    const { data, error } = await supabase
+      .from('organigramme_nodes')
+      .select('*')
+      .order('order_index', { ascending: true });
+    
+    if (error) console.error('Error fetching nodes:', error);
+    else setNodes(data || []);
+    setLoading(false);
+  };
+
   const handleAdd = () => {
-    setCurrentNode({ id: null, title: '', type: 'Service', parent: '' });
+    setCurrentNode({ title: '', type: 'Service', parent_id: null, order_index: nodes.length + 1 });
     setIsEditing(true);
   };
 
@@ -24,20 +35,54 @@ const DashboardOrganigramme = () => {
     setIsEditing(true);
   };
 
-  const handleDelete = (id) => {
+  const handleDelete = async (id) => {
     if (confirm('Supprimer cet élément ?')) {
-      setNodes(nodes.filter(n => n.id !== id));
+      const { error } = await supabase.from('organigramme_nodes').delete().eq('id', id);
+      if (!error) {
+        setNodes(nodes.filter(n => n.id !== id));
+      } else {
+        alert("Erreur lors de la suppression");
+      }
     }
   };
 
-  const handleSave = (e) => {
+  const handleSave = async (e) => {
     e.preventDefault();
-    if (currentNode.id) {
-      setNodes(nodes.map(n => n.id === currentNode.id ? currentNode : n));
-    } else {
-      setNodes([...nodes, { ...currentNode, id: Date.now() }]);
+    
+    try {
+      if (currentNode.id) {
+        // Update
+        const { error } = await supabase
+          .from('organigramme_nodes')
+          .update({
+            title: currentNode.title,
+            type: currentNode.type,
+            parent_id: currentNode.parent_id || null
+          })
+          .eq('id', currentNode.id);
+          
+        if (error) throw error;
+        setNodes(nodes.map(n => n.id === currentNode.id ? currentNode : n));
+      } else {
+        // Create
+        const { data, error } = await supabase
+          .from('organigramme_nodes')
+          .insert([{
+            title: currentNode.title,
+            type: currentNode.type,
+            parent_id: currentNode.parent_id || null,
+            order_index: currentNode.order_index
+          }])
+          .select();
+          
+        if (error) throw error;
+        setNodes([...nodes, data[0]]);
+      }
+      setIsEditing(false);
+    } catch (error) {
+      console.error("Save error:", error);
+      alert("Erreur lors de l'enregistrement");
     }
-    setIsEditing(false);
   };
 
   return (
@@ -60,31 +105,37 @@ const DashboardOrganigramme = () => {
       </div>
 
       <div className="bg-white rounded-2xl shadow-sm border border-neutral-gray-light p-6">
-        <div className="space-y-4">
-          {nodes.map((node) => (
-            <div key={node.id} className="flex items-center justify-between p-4 bg-neutral-background rounded-xl border border-neutral-gray-light hover:border-gabon-blue transition-colors">
-              <div className="flex items-center gap-4">
-                <div className={`w-10 h-10 rounded-full flex items-center justify-center ${
-                  node.type === 'Direction' ? 'bg-blue-100 text-blue-600' : 'bg-green-100 text-green-600'
-                }`}>
-                  <Users className="w-5 h-5" />
+        {loading ? (
+          <div className="text-center py-10"><Loader className="animate-spin w-8 h-8 mx-auto text-gabon-blue"/></div>
+        ) : nodes.length === 0 ? (
+            <div className="text-center py-10 text-neutral-gray-dark">Aucun élément. Commencez par en ajouter un.</div>
+        ) : (
+          <div className="space-y-4">
+            {nodes.map((node) => (
+              <div key={node.id} className="flex items-center justify-between p-4 bg-neutral-background rounded-xl border border-neutral-gray-light hover:border-gabon-blue transition-colors">
+                <div className="flex items-center gap-4">
+                  <div className={`w-10 h-10 rounded-full flex items-center justify-center ${
+                    node.type === 'Direction' ? 'bg-blue-100 text-blue-600' : 'bg-green-100 text-green-600'
+                  }`}>
+                    <Users className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <h3 className="font-bold text-neutral-black">{node.title}</h3>
+                    <p className="text-sm text-neutral-gray-dark">{node.type} {node.parent_id ? '(Sous-structure)' : '(Principal)'}</p>
+                  </div>
                 </div>
-                <div>
-                  <h3 className="font-bold text-neutral-black">{node.title}</h3>
-                  <p className="text-sm text-neutral-gray-dark">{node.type} {node.parent ? '(Sous-structure)' : '(Principal)'}</p>
+                <div className="flex gap-2">
+                  <button onClick={() => handleEdit(node)} className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg">
+                    <Edit2 className="w-4 h-4" />
+                  </button>
+                  <button onClick={() => handleDelete(node.id)} className="p-2 text-red-600 hover:bg-red-50 rounded-lg">
+                    <Trash2 className="w-4 h-4" />
+                  </button>
                 </div>
               </div>
-              <div className="flex gap-2">
-                <button onClick={() => handleEdit(node)} className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg">
-                  <Edit2 className="w-4 h-4" />
-                </button>
-                <button onClick={() => handleDelete(node.id)} className="p-2 text-red-600 hover:bg-red-50 rounded-lg">
-                  <Trash2 className="w-4 h-4" />
-                </button>
-              </div>
-            </div>
-          ))}
-        </div>
+            ))}
+          </div>
+        )}
       </div>
 
       {isEditing && (
@@ -117,6 +168,19 @@ const DashboardOrganigramme = () => {
                   <option value="Autre">Autre</option>
                 </select>
               </div>
+              <div>
+                 <label className="block text-sm font-medium mb-1">Parent (Optionnel)</label>
+                 <select
+                    value={currentNode.parent_id || ''}
+                    onChange={e => setCurrentNode({...currentNode, parent_id: e.target.value || null})}
+                    className="w-full p-2 border rounded-lg"
+                 >
+                    <option value="">Aucun (Racine)</option>
+                    {nodes.filter(n => n.id !== currentNode.id).map(n => (
+                        <option key={n.id} value={n.id}>{n.title}</option>
+                    ))}
+                 </select>
+              </div>
               <button type="submit" className="w-full py-2 bg-gabon-blue text-white rounded-lg font-bold">
                 Enregistrer
               </button>
@@ -127,5 +191,6 @@ const DashboardOrganigramme = () => {
     </DashboardLayout>
   );
 };
+
 
 export default DashboardOrganigramme;
