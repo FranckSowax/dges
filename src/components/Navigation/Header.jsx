@@ -8,7 +8,6 @@ const Header = () => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [activeMenu, setActiveMenu] = useState(null);
-  const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
   const [isMoreMenuOpen, setIsMoreMenuOpen] = useState(false);
 
   // Séparer les menus : principaux (3 premiers) et secondaires (le reste)
@@ -112,37 +111,16 @@ const Header = () => {
               <Search className="w-5 h-5 text-neutral-gray-dark" />
             </button>
 
-            {/* User Menu */}
-            <div className="relative hidden md:block">
-              <button
-                onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
-                className="flex items-center space-x-2 bg-gabon-green text-white px-3 md:px-4 py-2 rounded-full font-medium hover:bg-gabon-green-dark transition-all duration-200 shadow-sm hover:shadow-md text-sm"
-              >
-                <User className="w-4 h-4" />
-                <span className="hidden xl:inline">Mon Compte</span>
-                <ChevronDown className="w-3 h-3" />
-              </button>
-
-              {/* User Dropdown */}
-              {isUserMenuOpen && (
-                <div className="absolute top-full right-0 pt-2">
-                  <div className="w-48 bg-white rounded-xl shadow-xl border border-neutral-gray-light overflow-hidden">
-                    <Link to="/mon-espace" className="block px-4 py-3 text-sm text-neutral-gray-dark hover:bg-gabon-green-light hover:text-gabon-green transition-colors border-b border-neutral-gray-light">
-                      Mon Espace
-                    </Link>
-                  <Link to="/profil" className="block px-4 py-3 text-sm text-neutral-gray-dark hover:bg-gabon-green-light hover:text-gabon-green transition-colors border-b border-neutral-gray-light">
-                    Mon Profil
-                  </Link>
-                  <Link to="/mes-demandes" className="block px-4 py-3 text-sm text-neutral-gray-dark hover:bg-gabon-green-light hover:text-gabon-green transition-colors border-b border-neutral-gray-light">
-                    Mes Demandes
-                  </Link>
-                  <Link to="/deconnexion" className="block px-4 py-3 text-sm text-red-600 hover:bg-red-50 transition-colors">
-                    Déconnexion
-                  </Link>
-                  </div>
-                </div>
-              )}
-            </div>
+            {/* User Menu - Direct Link */}
+            <a
+              href="https://admin.dges.ga/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="hidden md:flex items-center space-x-2 bg-gabon-green text-white px-3 md:px-4 py-2 rounded-full font-medium hover:bg-gabon-green-dark transition-all duration-200 shadow-sm hover:shadow-md text-sm"
+            >
+              <User className="w-4 h-4" />
+              <span className="hidden xl:inline">Mon Compte</span>
+            </a>
 
             {/* Mobile Menu Toggle */}
             <button
@@ -173,9 +151,14 @@ const Header = () => {
                 </Link>
               ))}
               <div className="pt-3 border-t border-neutral-gray-light mt-3 space-y-2">
-                <button className="w-full bg-gabon-green text-white px-4 py-3 rounded-xl font-medium hover:bg-gabon-green-dark transition-all duration-200 text-sm active:scale-95">
+                <a
+                  href="https://admin.dges.ga/"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="w-full bg-gabon-green text-white px-4 py-3 rounded-xl font-medium hover:bg-gabon-green-dark transition-all duration-200 text-sm active:scale-95 flex items-center justify-center"
+                >
                   Mon Compte
-                </button>
+                </a>
                 <button className="w-full bg-neutral-gray-light text-neutral-black px-4 py-3 rounded-xl font-medium hover:bg-neutral-gray transition-all duration-200 text-sm flex items-center justify-center gap-2 active:scale-95">
                   <Search className="w-4 h-4" />
                   Rechercher
