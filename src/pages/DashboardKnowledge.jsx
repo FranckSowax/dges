@@ -324,67 +324,69 @@ const DashboardKnowledge = () => {
         <div className="p-6 border-b border-neutral-gray-light">
             <h2 className="font-bold text-lg">Fichiers Sources</h2>
         </div>
-        <table className="w-full">
-          <thead className="bg-neutral-background border-b border-neutral-gray-light">
-            <tr>
-              <th className="px-6 py-4 text-left text-sm font-semibold text-neutral-gray-dark">Fichier</th>
-              <th className="px-6 py-4 text-left text-sm font-semibold text-neutral-gray-dark">Type</th>
-              <th className="px-6 py-4 text-left text-sm font-semibold text-neutral-gray-dark">Statut</th>
-              <th className="px-6 py-4 text-left text-sm font-semibold text-neutral-gray-dark">Date d'ajout</th>
-              <th className="px-6 py-4 text-right text-sm font-semibold text-neutral-gray-dark">Actions</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-neutral-gray-light">
-            {loading ? (
-              <tr><td colSpan="5" className="p-8 text-center">Chargement...</td></tr>
-            ) : files.length === 0 ? (
-              <tr><td colSpan="5" className="p-8 text-center text-neutral-gray-dark">Aucun document dans la base de connaissance</td></tr>
-            ) : (
-              files.map((file) => (
-                <tr key={file.id} className="hover:bg-neutral-background/50">
-                  <td className="px-6 py-4">
-                    <div className="flex items-center gap-3">
-                        <FileText className="w-5 h-5 text-neutral-gray-dark" />
-                        <span className="font-medium text-neutral-black">{file.filename}</span>
-                    </div>
-                  </td>
-                  <td className="px-6 py-4 uppercase text-xs font-bold text-neutral-gray-dark">
-                    {file.file_type || file.filename.split('.').pop()}
-                  </td>
-                  <td className="px-6 py-4">
-                    {file.status === 'processed' && (
-                        <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-green-100 text-green-700">
-                            <CheckCircle className="w-3 h-3" /> Indexé
-                        </span>
-                    )}
-                    {file.status === 'pending' && (
-                        <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-yellow-100 text-yellow-700">
-                            <RefreshCw className="w-3 h-3 animate-spin" /> En traitement
-                        </span>
-                    )}
-                    {file.status === 'error' && (
-                        <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-red-100 text-red-700">
-                            <AlertCircle className="w-3 h-3" /> Erreur
-                        </span>
-                    )}
-                  </td>
-                  <td className="px-6 py-4 text-sm text-neutral-gray-dark">
-                    {new Date(file.created_at).toLocaleDateString()}
-                  </td>
-                  <td className="px-6 py-4 text-right">
-                    <button 
-                        onClick={() => handleDelete(file.id)}
-                        className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
-                        title="Supprimer"
-                    >
-                        <Trash2 className="w-4 h-4" />
-                    </button>
-                  </td>
-                </tr>
-              ))
-            )}
-          </tbody>
-        </table>
+        <div className="overflow-x-auto">
+          <table className="w-full min-w-[800px]">
+            <thead className="bg-neutral-background border-b border-neutral-gray-light">
+              <tr>
+                <th className="px-6 py-4 text-left text-sm font-semibold text-neutral-gray-dark">Fichier</th>
+                <th className="px-6 py-4 text-left text-sm font-semibold text-neutral-gray-dark">Type</th>
+                <th className="px-6 py-4 text-left text-sm font-semibold text-neutral-gray-dark">Statut</th>
+                <th className="px-6 py-4 text-left text-sm font-semibold text-neutral-gray-dark">Date d'ajout</th>
+                <th className="px-6 py-4 text-right text-sm font-semibold text-neutral-gray-dark">Actions</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-neutral-gray-light">
+              {loading ? (
+                <tr><td colSpan="5" className="p-8 text-center">Chargement...</td></tr>
+              ) : files.length === 0 ? (
+                <tr><td colSpan="5" className="p-8 text-center text-neutral-gray-dark">Aucun document dans la base de connaissance</td></tr>
+              ) : (
+                files.map((file) => (
+                  <tr key={file.id} className="hover:bg-neutral-background/50">
+                    <td className="px-6 py-4">
+                      <div className="flex items-center gap-3">
+                          <FileText className="w-5 h-5 text-neutral-gray-dark" />
+                          <span className="font-medium text-neutral-black">{file.filename}</span>
+                      </div>
+                    </td>
+                    <td className="px-6 py-4 uppercase text-xs font-bold text-neutral-gray-dark">
+                      {file.file_type || file.filename.split('.').pop()}
+                    </td>
+                    <td className="px-6 py-4">
+                      {file.status === 'processed' && (
+                          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-green-100 text-green-700">
+                              <CheckCircle className="w-3 h-3" /> Indexé
+                          </span>
+                      )}
+                      {file.status === 'pending' && (
+                          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-yellow-100 text-yellow-700">
+                              <RefreshCw className="w-3 h-3 animate-spin" /> En traitement
+                          </span>
+                      )}
+                      {file.status === 'error' && (
+                          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-red-100 text-red-700">
+                              <AlertCircle className="w-3 h-3" /> Erreur
+                          </span>
+                      )}
+                    </td>
+                    <td className="px-6 py-4 text-sm text-neutral-gray-dark">
+                      {new Date(file.created_at).toLocaleDateString()}
+                    </td>
+                    <td className="px-6 py-4 text-right">
+                      <button 
+                          onClick={() => handleDelete(file.id)}
+                          className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                          title="Supprimer"
+                      >
+                          <Trash2 className="w-4 h-4" />
+                      </button>
+                    </td>
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </table>
+        </div>
       </div>
     </DashboardLayout>
   );
