@@ -1,10 +1,43 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Search, Sparkles, ArrowRight } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { supabase } from '../../supabaseClient';
 
 const HeroSection = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [isFocused, setIsFocused] = useState(false);
+  const [heroConfig, setHeroConfig] = useState({
+    media_type: 'video',
+    media_url: 'https://res.cloudinary.com/dln7mhq4z/video/upload/v1732114938/v4_ou0bi6.mp4', // Default fallback
+    title: "L'Enseignement Supérieur Gabonais",
+    subtitle: "Accédez à tous les services de la Direction Générale de l'Enseignement Supérieur en quelques clics. Simple, rapide et sécurisé."
+  });
+
+  useEffect(() => {
+    const fetchHeroConfig = async () => {
+      try {
+        const { data, error } = await supabase
+          .from('homepage_config')
+          .select('*')
+          .eq('section_key', 'hero_main')
+          .single();
+
+        if (data) {
+          setHeroConfig(prev => ({
+            ...prev,
+            ...data,
+            // Use fallback title/subtitle if empty in DB to avoid breaking layout
+            title: data.title || prev.title,
+            subtitle: data.subtitle || prev.subtitle
+          }));
+        }
+      } catch (err) {
+        console.warn('Using default hero config');
+      }
+    };
+
+    fetchHeroConfig();
+  }, []);
 
   const suggestedQuestions = [
     "Comment obtenir une bourse ?",
@@ -43,14 +76,13 @@ const HeroSection = () => {
 
             {/* Main Title */}
             <h1 className="text-5xl lg:text-6xl font-bold text-neutral-black mb-6 leading-tight">
-              L'Enseignement Supérieur Gabonais{' '}
+              {heroConfig.title}{' '}
               <span className="text-gradient">à portée de clic</span>
             </h1>
 
             {/* Subtitle */}
             <p className="text-xl text-neutral-gray-dark mb-8 leading-relaxed">
-              Accédez à tous les services de la Direction Générale de l'Enseignement Supérieur 
-              en quelques clics. Simple, rapide et sécurisé.
+              {heroConfig.subtitle}
             </p>
 
             {/* AI Search Bar */}
@@ -109,18 +141,18 @@ const HeroSection = () => {
             {/* Stats */}
             <div className="flex items-center space-x-8">
               <div>
-                <p className="text-3xl font-bold text-gabon-green">15+</p>
-                <p className="text-sm text-neutral-gray-dark">Établissements</p>
+                <p className="text-3xl font-bold text-gabon-green">5</p>
+                <p className="text-sm text-neutral-gray-dark">Universités Publiques</p>
               </div>
               <div className="w-px h-12 bg-neutral-gray-light"></div>
               <div>
-                <p className="text-3xl font-bold text-gabon-green">50K+</p>
-                <p className="text-sm text-neutral-gray-dark">Étudiants</p>
+                <p className="text-3xl font-bold text-gabon-green">8</p>
+                <p className="text-sm text-neutral-gray-dark">Grandes Écoles</p>
               </div>
               <div className="w-px h-12 bg-neutral-gray-light"></div>
               <div>
-                <p className="text-3xl font-bold text-gabon-green">95%</p>
-                <p className="text-sm text-neutral-gray-dark">Satisfaction</p>
+                <p className="text-3xl font-bold text-gabon-green">64</p>
+                <p className="text-sm text-neutral-gray-dark">Établissements Privés</p>
               </div>
             </div>
           </motion.div>
@@ -133,14 +165,34 @@ const HeroSection = () => {
             className="relative hidden lg:block"
           >
             <div className="relative">
-              {/* Placeholder for illustration */}
-              <div className="aspect-square bg-gradient-to-br from-gabon-green to-gabon-blue rounded-3xl shadow-2xl flex items-center justify-center overflow-hidden">
-                <div className="text-center text-white p-12">
-                  <div className="w-32 h-32 bg-white/20 rounded-full mx-auto mb-6 flex items-center justify-center backdrop-blur-sm">
-                    <Search className="w-16 h-16" />
+              {/* Dynamic Media */}
+              <div className="aspect-square bg-gradient-to-br from-gabon-green to-gabon-blue rounded-3xl shadow-2xl flex items-center justify-center overflow-hidden relative group">
+                {heroConfig.media_type === 'video' ? (
+                  <video 
+                    src={heroConfig.media_url} 
+                    className="w-full h-full object-cover"
+                    autoPlay 
+                    loop 
+                    muted 
+                    playsInline
+                  />
+                ) : (
+                  <img 
+                    src={heroConfig.media_url} 
+                    className="w-full h-full object-cover" 
+                    alt="Illustration DGES" 
+                  />
+                )}
+                
+                {/* Overlay Text (Optional) */}
+                <div className="absolute inset-0 bg-black/20 flex items-center justify-center">
+                  <div className="text-center text-white p-12 backdrop-blur-sm bg-black/10 rounded-3xl border border-white/10">
+                    <div className="w-24 h-24 bg-white/20 rounded-full mx-auto mb-4 flex items-center justify-center backdrop-blur-md animate-pulse-slow">
+                       {heroConfig.media_type === 'video' ? <Sparkles className="w-10 h-10" /> : <Search className="w-10 h-10" />}
+                    </div>
+                    <p className="text-2xl font-bold mb-2">Portail DGES</p>
+                    <p className="text-white/90 text-sm">Enseignement Supérieur Connecté</p>
                   </div>
-                  <p className="text-2xl font-bold mb-2">Illustration 3D</p>
-                  <p className="text-white/80">Étudiants gabonais connectés</p>
                 </div>
               </div>
 

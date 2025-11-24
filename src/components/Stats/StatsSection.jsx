@@ -6,33 +6,33 @@ const stats = [
   {
     id: 1,
     icon: Building2,
-    value: '15+',
-    label: 'Établissements Partenaires',
-    description: 'Universités et grandes écoles',
+    value: '5',
+    label: 'Universités Publiques',
+    description: 'Établissements d\'enseignement supérieur',
     color: 'green'
   },
   {
     id: 2,
-    icon: Users,
-    value: '50,000+',
-    label: 'Étudiants Accompagnés',
-    description: 'Chaque année académique',
+    icon: Award,
+    value: '8',
+    label: 'Grandes Écoles & Instituts Publics',
+    description: 'Formations spécialisées',
     color: 'blue'
   },
   {
     id: 3,
-    icon: Award,
-    value: '2,500+',
-    label: 'Bourses Attribuées',
-    description: 'Nationales et internationales',
+    icon: Building2,
+    value: '64',
+    label: 'Établissements Privés',
+    description: 'Agréés par la DGES',
     color: 'yellow'
   },
   {
     id: 4,
-    icon: TrendingUp,
-    value: '95%',
-    label: 'Taux de Satisfaction',
-    description: 'Services en ligne',
+    icon: Users,
+    value: '77',
+    label: 'Total Établissements',
+    description: 'Public et privé confondus',
     color: 'green'
   }
 ];

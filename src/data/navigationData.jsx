@@ -1,262 +1,212 @@
 import React from 'react';
 import { 
-  Home, Building2, GraduationCap, Award, BookOpen, 
-  FileText, Users, Calendar, MapPin, Phone 
+  Building2, Users, FileText, Target, School, 
+  Globe, FlaskConical, Lightbulb, Handshake, Plane,
+  BarChart3, ClipboardCheck, BookOpen, Scale, Image,
+  Newspaper, LayoutGrid, Bookmark
 } from 'lucide-react';
 
 export const navigationData = [
   {
-    id: 'accueil',
-    label: 'Accueil',
-    href: '/',
-  },
-  {
     id: 'dges',
-    label: 'La DGES',
+    label: 'DGES',
     megaMenu: {
       sections: [
         {
-          title: 'À Propos',
+          title: 'Organisation',
           items: [
             {
-              label: 'Présentation',
-              description: 'Découvrez notre mission et nos valeurs',
+              label: 'Organigramme de la DGES',
+              description: 'Structure hiérarchique',
+              icon: <LayoutGrid className="w-5 h-5" />,
+              href: '/dges/organigramme'
+            },
+            {
+              label: 'Annuaire des Responsables',
+              description: 'Contacts clés',
+              icon: <Users className="w-5 h-5" />,
+              href: '/dges/responsables'
+            },
+            {
+              label: 'Attribution & Organisation',
+              description: 'Missions et fonctionnement',
               icon: <Building2 className="w-5 h-5" />,
-              href: '/presentation'
-            },
-            {
-              label: 'Organisation',
-              description: 'Structure et organigramme',
-              icon: <Users className="w-5 h-5" />,
-              href: '/organisation'
-            },
-            {
-              label: 'Équipe Dirigeante',
-              description: 'Rencontrez nos leaders',
-              icon: <Users className="w-5 h-5" />,
-              href: '/equipe'
+              href: '/dges/organisation'
             }
           ]
         },
         {
-          title: 'Informations',
+          title: 'Documents Stratégiques',
           items: [
             {
-              label: 'Actualités',
-              description: 'Les dernières nouvelles',
-              icon: <FileText className="w-5 h-5" />,
-              href: '/actualites'
+              label: 'Annuaire des Etablissements Publics',
+              description: 'Liste officielle',
+              icon: <School className="w-5 h-5" />,
+              href: '/dges/annuaire-public'
             },
             {
-              label: 'Événements',
-              description: 'Calendrier des événements',
-              icon: <Calendar className="w-5 h-5" />,
-              href: '/evenements'
-            },
-            {
-              label: 'Contact',
-              description: 'Nous contacter',
-              icon: <Phone className="w-5 h-5" />,
-              href: '/contact'
+              label: 'Plan d\'action de la DGES',
+              description: 'Feuille de route',
+              icon: <Target className="w-5 h-5" />,
+              href: '/dges/plan-action'
             }
           ]
         }
-      ],
-      featured: {
-        badge: 'Nouveau',
-        title: 'Rapport Annuel 2024',
-        description: 'Découvrez nos réalisations et nos objectifs pour l\'année à venir',
-        cta: 'Télécharger le rapport',
-        href: '/rapport-annuel'
-      }
-    }
-  },
-  {
-    id: 'etudiants',
-    label: 'Étudiants',
-    megaMenu: {
-      sections: [
-        {
-          title: 'Services Étudiants',
-          items: [
-            {
-              label: 'Inscription',
-              description: 'Procédures d\'inscription',
-              icon: <GraduationCap className="w-5 h-5" />,
-              href: '/inscription'
-            },
-            {
-              label: 'Orientation',
-              description: 'Trouvez votre voie',
-              icon: <MapPin className="w-5 h-5" />,
-              href: '/orientation'
-            },
-            {
-              label: 'Vie Étudiante',
-              description: 'Activités et associations',
-              icon: <Users className="w-5 h-5" />,
-              href: '/vie-etudiante'
-            }
-          ]
-        },
-        {
-          title: 'Documents',
-          items: [
-            {
-              label: 'Attestations',
-              description: 'Demandez vos attestations',
-              icon: <FileText className="w-5 h-5" />,
-              href: '/attestations'
-            },
-            {
-              label: 'Relevés de Notes',
-              description: 'Consultez vos résultats',
-              icon: <BookOpen className="w-5 h-5" />,
-              href: '/releves'
-            },
-            {
-              label: 'Diplômes',
-              description: 'Homologation et équivalence',
-              icon: <Award className="w-5 h-5" />,
-              href: '/diplomes'
-            }
-          ]
-        }
-      ],
-      featured: {
-        badge: 'Important',
-        title: 'Calendrier Universitaire',
-        description: 'Consultez les dates importantes de l\'année académique 2024-2025',
-        cta: 'Voir le calendrier',
-        href: '/calendrier'
-      }
-    }
-  },
-  {
-    id: 'bourses',
-    label: 'Bourses',
-    megaMenu: {
-      sections: [
-        {
-          title: 'Types de Bourses',
-          items: [
-            {
-              label: 'Bourses Nationales',
-              description: 'Bourses du gouvernement gabonais',
-              icon: <Award className="w-5 h-5" />,
-              href: '/bourses/nationales'
-            },
-            {
-              label: 'Bourses Internationales',
-              description: 'Opportunités à l\'étranger',
-              icon: <Award className="w-5 h-5" />,
-              href: '/bourses/internationales'
-            },
-            {
-              label: 'Bourses d\'Excellence',
-              description: 'Pour les meilleurs étudiants',
-              icon: <Award className="w-5 h-5" />,
-              href: '/bourses/excellence'
-            }
-          ]
-        },
-        {
-          title: 'Démarches',
-          items: [
-            {
-              label: 'Faire une Demande',
-              description: 'Déposez votre dossier en ligne',
-              icon: <FileText className="w-5 h-5" />,
-              href: '/bourses/demande'
-            },
-            {
-              label: 'Critères d\'Éligibilité',
-              description: 'Vérifiez vos conditions',
-              icon: <BookOpen className="w-5 h-5" />,
-              href: '/bourses/criteres'
-            },
-            {
-              label: 'Suivi de Dossier',
-              description: 'Consultez l\'état de votre demande',
-              icon: <FileText className="w-5 h-5" />,
-              href: '/bourses/suivi'
-            }
-          ]
-        }
-      ],
-      featured: {
-        badge: 'Ouvert',
-        title: 'Campagne de Bourses 2024',
-        description: 'Les candidatures sont ouvertes jusqu\'au 30 décembre 2024',
-        cta: 'Postuler maintenant',
-        href: '/bourses/campagne-2024'
-      }
+      ]
     }
   },
   {
     id: 'etablissements',
-    label: 'Établissements',
+    label: 'Etablissements',
     megaMenu: {
       sections: [
         {
           title: 'Types d\'Établissements',
           items: [
             {
-              label: 'Universités Publiques',
-              description: 'Liste des universités d\'État',
-              icon: <Building2 className="w-5 h-5" />,
-              href: '/etablissements/universites-publiques'
+              label: 'Public',
+              description: 'Universités et Grandes Écoles d\'État',
+              icon: <School className="w-5 h-5" />,
+              href: '/etablissements-publics'
             },
             {
-              label: 'Universités Privées',
+              label: 'Privé',
               description: 'Établissements privés agréés',
               icon: <Building2 className="w-5 h-5" />,
-              href: '/etablissements/universites-privees'
+              href: '/etablissements-prives'
             },
             {
-              label: 'Grandes Écoles',
-              description: 'Écoles spécialisées',
-              icon: <Building2 className="w-5 h-5" />,
-              href: '/etablissements/grandes-ecoles'
-            }
-          ]
-        },
-        {
-          title: 'Services',
-          items: [
-            {
-              label: 'Accréditation',
-              description: 'Processus d\'accréditation',
-              icon: <Award className="w-5 h-5" />,
-              href: '/etablissements/accreditation'
+              label: 'RUP',
+              description: 'Reconnus d\'Utilité Publique',
+              icon: <Bookmark className="w-5 h-5" />,
+              href: '/etablissements-rup'
             },
             {
-              label: 'Partenariats',
-              description: 'Collaborations internationales',
-              icon: <Users className="w-5 h-5" />,
-              href: '/etablissements/partenariats'
-            },
-            {
-              label: 'Statistiques',
-              description: 'Données et indicateurs',
-              icon: <FileText className="w-5 h-5" />,
-              href: '/etablissements/statistiques'
+              label: 'Inter-Etat',
+              description: 'Établissements internationaux',
+              icon: <Globe className="w-5 h-5" />,
+              href: '/etablissements-inter-etat'
             }
           ]
         }
-      ],
-      featured: {
-        badge: 'Guide',
-        title: 'Annuaire des Établissements',
-        description: 'Trouvez l\'établissement qui correspond à vos ambitions',
-        cta: 'Consulter l\'annuaire',
-        href: '/annuaire'
-      }
+      ]
     }
   },
   {
-    id: 'formations',
-    label: 'Formations',
-    href: '/formations'
+    id: 'recherche',
+    label: 'Recherche & innovation',
+    megaMenu: {
+      sections: [
+        {
+          title: 'Pôles de Recherche',
+          items: [
+            {
+              label: 'Laboratoires de Recherche',
+              description: 'Unités et équipes',
+              icon: <FlaskConical className="w-5 h-5" />,
+              href: '/recherche/laboratoires'
+            },
+            {
+              label: 'Recherche scientifique et Innovation',
+              description: 'Programmes et projets',
+              icon: <Lightbulb className="w-5 h-5" />,
+              href: '/recherche/innovation'
+            }
+          ]
+        }
+      ]
+    }
+  },
+  {
+    id: 'cooperation',
+    label: 'Coopération & Relation internationale',
+    megaMenu: {
+      sections: [
+        {
+          title: 'International',
+          items: [
+            {
+              label: 'Accords de partenariat',
+              description: 'Conventions signées',
+              icon: <Globe className="w-5 h-5" />,
+              href: '/cooperation/accords'
+            },
+            {
+              label: 'La Mobilité étudiante',
+              description: 'Échanges et voyages d\'études',
+              icon: <Plane className="w-5 h-5" />,
+              href: '/cooperation/mobilite'
+            }
+          ]
+        }
+      ]
+    }
+  },
+  {
+    id: 'realisations',
+    label: 'Réalisations & Stats',
+    megaMenu: {
+      sections: [
+        {
+          title: 'Données et Bilan',
+          items: [
+            {
+              label: 'Statistiques',
+              description: 'Chiffres clés de l\'ES',
+              icon: <BarChart3 className="w-5 h-5" />,
+              href: '/stats/statistiques'
+            },
+            {
+              label: 'Bilans & réalisations',
+              description: 'Rapports d\'activité',
+              icon: <ClipboardCheck className="w-5 h-5" />,
+              href: '/stats/bilans'
+            },
+            {
+              label: 'Etudes',
+              description: 'Analyses et prospective',
+              icon: <BookOpen className="w-5 h-5" />,
+              href: '/stats/etudes'
+            }
+          ]
+        }
+      ]
+    }
+  },
+  {
+    id: 'ressources',
+    label: 'Ressources',
+    megaMenu: {
+      sections: [
+        {
+          title: 'Cadre Juridique',
+          items: [
+            {
+              label: 'Textes fondamentaux',
+              description: 'Lois et décrets nationaux',
+              icon: <Scale className="w-5 h-5" />,
+              href: '/ressources/textes-fondamentaux'
+            },
+            {
+              label: 'Textes Communautaires',
+              description: 'Règlements CEMAC/CAMES',
+              icon: <Globe className="w-5 h-5" />,
+              href: '/ressources/textes-communautaires'
+            },
+            {
+              label: 'Gouvernance du système',
+              description: 'Pilotage et régulation',
+              icon: <Building2 className="w-5 h-5" />,
+              href: '/ressources/gouvernance'
+            }
+          ]
+        }
+      ]
+    }
+  },
+  {
+    id: 'actualites',
+    label: 'Actualités',
+    href: '/actualites'
   }
 ];

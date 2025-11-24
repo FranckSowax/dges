@@ -1,9 +1,24 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { MessageCircle, X, Send, Sparkles } from 'lucide-react';
 
-const ChatbotWidget = () => {
+const ChatbotWidget = ({ isOpenExternal, onToggle }) => {
   const [isOpen, setIsOpen] = useState(false);
+
+  // Synchroniser avec l'état externe si fourni
+  useEffect(() => {
+    if (isOpenExternal !== undefined) {
+      setIsOpen(isOpenExternal);
+    }
+  }, [isOpenExternal]);
+
+  const handleToggle = () => {
+    const newState = !isOpen;
+    setIsOpen(newState);
+    if (onToggle) {
+      onToggle(newState);
+    }
+  };
   const [messages, setMessages] = useState([
     {
       id: 1,
@@ -56,7 +71,7 @@ const ChatbotWidget = () => {
     <>
       {/* Floating Button */}
       <motion.button
-        onClick={() => setIsOpen(!isOpen)}
+        onClick={handleToggle}
         className="fixed bottom-6 right-6 z-50 bg-gradient-to-r from-gabon-green to-gabon-blue text-white w-16 h-16 rounded-full shadow-2xl flex items-center justify-center hover:scale-110 transition-transform duration-300"
         whileHover={{ scale: 1.1 }}
         whileTap={{ scale: 0.95 }}

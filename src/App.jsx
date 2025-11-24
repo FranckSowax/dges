@@ -2,41 +2,37 @@ import React from 'react';
 import Header from './components/Navigation/Header';
 import HeroSection from './components/Hero/HeroSection';
 import ServicesGrid from './components/Services/ServicesGrid';
+import NewsSection from './components/News/NewsSection';
 import StatsSection from './components/Stats/StatsSection';
 import PartnersCarousel from './components/Partners/PartnersCarousel';
-import ChatbotWidget from './components/Chatbot/ChatbotWidget';
+import AIChatCTA from './components/AI/AIChatCTA';
 import Footer from './components/Footer/Footer';
+import ChatBot from './components/Chat/ChatBot';
+import { ChatProvider } from './context/ChatContext';
+
+function AppContent() {
+  return (
+    <div className="min-h-screen">
+      <Header />
+      <main>
+        <HeroSection />
+        <NewsSection />
+        <ServicesGrid />
+        <StatsSection />
+        <PartnersCarousel />
+        <AIChatCTA />
+      </main>
+      <Footer />
+      <ChatBot />
+    </div>
+  );
+}
 
 function App() {
   return (
-    <div className="min-h-screen">
-      {/* Navigation */}
-      <Header />
-
-      {/* Main Content */}
-      <main>
-        {/* Hero Section */}
-        <HeroSection />
-
-        {/* Services Grid */}
-        <ServicesGrid />
-
-        {/* News Section */}
-        <NewsSection />
-
-        {/* Stats Section */}
-        <StatsSection />
-
-        {/* Partners Carousel */}
-        <PartnersCarousel />
-      </main>
-
-      {/* Footer */}
-      <Footer />
-
-      {/* Chatbot Widget */}
-      <ChatbotWidget />
-    </div>
+    <ChatProvider>
+      <AppContent />
+    </ChatProvider>
   );
 }
 
