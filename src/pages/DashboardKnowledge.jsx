@@ -158,30 +158,34 @@ const DashboardKnowledge = () => {
       // On met à jour l'UI localement pour montrer que ça travaille
       setFiles(prev => prev.map(f => f.id === record.id ? { ...f, status: 'pending' } : f));
 
-      const response = await fetch('/.netlify/functions/process-document', {
+      const response = await fetch('/.netlify/functions/process-document-background', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ 
           record: {
             ...record,
-            file_path: storagePath // Important pour le backend
+            file_path: storagePath
           }
         })
       });
 
-      const result = await response.json();
-      
-      if (!response.ok) {
-        throw new Error(result.error || 'Erreur de traitement');
+      // Pour une background function, on reçoit 202 Accepted immédiatement
+      if (response.status === 202) {
+        alert('Document envoyé pour traitement en arrière-plan. Le statut se mettra à jour automatiquement dans quelques instants.');
+        // On laisse le polling ou le refresh manuel faire le reste, 
+        // ou on garde le statut 'pending' localement
+        return; 
       }
 
-      // Succès : mise à jour du statut
-      setFiles(prev => prev.map(f => f.id === record.id ? { ...f, status: 'processed' } : f));
-      alert(`Document traité avec succès ! (${result.chunks} segments indexés)`);
+      // Si ce n'est pas 202, c'est peut-être une erreur directe
+      if (!response.ok) {
+        const result = await response.json().catch(() => ({}));
+        throw new Error(result.error || 'Erreur lors de l\'envoi du traitement');
+      }
 
     } catch (error) {
       console.error('Processing error:', error);
-      alert('Le document a été uploadé mais le traitement a échoué : ' + error.message);
+      alert('Erreur: ' + error.message);
       setFiles(prev => prev.map(f => f.id === record.id ? { ...f, status: 'error' } : f));
     }
   };
