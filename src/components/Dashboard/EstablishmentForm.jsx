@@ -64,7 +64,9 @@ const EstablishmentForm = ({ establishment, type, onClose, onSave }) => {
           .update(dataToSave)
           .eq('id', establishment.id)
           .select();
+          
         if (error) throw error;
+        if (!data || data.length === 0) throw new Error('Aucune donnée retournée après la mise à jour');
         result = data[0];
       } else {
         // Create
@@ -72,15 +74,21 @@ const EstablishmentForm = ({ establishment, type, onClose, onSave }) => {
           .from('establishments')
           .insert([dataToSave])
           .select();
+          
         if (error) throw error;
+        if (!data || data.length === 0) throw new Error('Aucune donnée retournée après la création');
         result = data[0];
       }
       
-      onSave(result);
-      onClose();
+      if (result) {
+        onSave(result);
+        onClose();
+      } else {
+        throw new Error('Erreur inattendue: résultat vide');
+      }
     } catch (error) {
       console.error('Error saving establishment:', error);
-      alert('Erreur lors de l\'enregistrement');
+      alert('Erreur lors de l\'enregistrement: ' + (error.message || 'Erreur inconnue'));
     } finally {
       setLoading(false);
     }
