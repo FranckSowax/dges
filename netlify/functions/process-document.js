@@ -1,7 +1,9 @@
 const { createClient } = require('@supabase/supabase-js');
 const OpenAI = require('openai');
-const pdf = require('pdf-parse');
-const mammoth = require('mammoth');
+
+// Lazy load heavy dependencies inside handler
+// const pdf = require('pdf-parse'); 
+// const mammoth = require('mammoth');
 
 const supabaseUrl = process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL;
 const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
@@ -16,6 +18,9 @@ const supabase = createClient(supabaseUrl, supabaseServiceKey);
 const openai = new OpenAI({ apiKey: openAiKey });
 
 exports.handler = async (event, context) => {
+  // Log start to debug 502
+  console.log("Function process-document started");
+
   if (event.httpMethod !== 'POST') {
     return { statusCode: 405, body: 'Method Not Allowed' };
   }
@@ -29,6 +34,7 @@ exports.handler = async (event, context) => {
     // 1. Télécharger le fichier depuis Storage
     const filePath = record.file_path || `knowledge/${record.filename}`; 
     
+    console.log(`Downloading file from: ${filePath}`);
     const { data: fileData, error: downloadError } = await supabase.storage
       .from('documents')
       .download(filePath);
@@ -38,16 +44,20 @@ exports.handler = async (event, context) => {
     // 2. Convertir en Buffer
     const arrayBuffer = await fileData.arrayBuffer();
     const buffer = Buffer.from(arrayBuffer);
+    console.log(`File downloaded, size: ${buffer.length} bytes`);
 
     // 3. Extraction du texte
     let textContent = "";
     const fileExt = record.filename.split('.').pop().toLowerCase();
 
     if (fileExt === 'pdf') {
+      console.log("Loading pdf-parse...");
+      const pdf = require('pdf-parse');
       const pdfData = await pdf(buffer);
       textContent = pdfData.text;
     } else if (fileExt === 'docx' || fileExt === 'doc') {
-        // Utilisation de mammoth pour DOCX
+        console.log("Loading mammoth...");
+        const mammoth = require('mammoth');
         const result = await mammoth.extractRawText({ buffer: buffer });
         textContent = result.value;
         if (result.messages && result.messages.length > 0) {
@@ -59,6 +69,8 @@ exports.handler = async (event, context) => {
       console.warn("Format non supporté, tentative texte brut");
       textContent = buffer.toString('utf-8'); // Try raw
     }
+    
+    console.log("Text extraction complete.");
 
     // ... (suite du traitement) ...
     textContent = textContent.replace(/\n+/g, '\n').trim();
