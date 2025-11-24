@@ -53,13 +53,13 @@ const HeroSection = () => {
   };
 
   return (
-    <section className="relative bg-gradient-to-br from-gabon-green-light via-white to-gabon-blue-light pt-32 pb-20 overflow-hidden">
+    <section className="relative bg-gradient-to-br from-gabon-green-light via-white to-gabon-blue-light pt-20 sm:pt-24 md:pt-32 pb-12 sm:pb-16 md:pb-20 overflow-hidden">
       {/* Decorative Elements */}
-      <div className="absolute top-0 right-0 w-96 h-96 bg-gabon-yellow-light rounded-full blur-3xl opacity-30 -translate-y-1/2 translate-x-1/2"></div>
-      <div className="absolute bottom-0 left-0 w-96 h-96 bg-gabon-green-light rounded-full blur-3xl opacity-40 translate-y-1/2 -translate-x-1/2"></div>
+      <div className="absolute top-0 right-0 w-64 h-64 sm:w-96 sm:h-96 bg-gabon-yellow-light rounded-full blur-3xl opacity-30 -translate-y-1/2 translate-x-1/2"></div>
+      <div className="absolute bottom-0 left-0 w-64 h-64 sm:w-96 sm:h-96 bg-gabon-green-light rounded-full blur-3xl opacity-40 translate-y-1/2 -translate-x-1/2"></div>
 
       <div className="container-custom relative z-10">
-        <div className="grid lg:grid-cols-2 gap-12 items-center">
+        <div className="grid lg:grid-cols-2 gap-8 md:gap-12 items-center">
           {/* Left Content */}
           <motion.div
             initial={{ opacity: 0, x: -30 }}
@@ -67,46 +67,49 @@ const HeroSection = () => {
             transition={{ duration: 0.6 }}
           >
             {/* Badge */}
-            <div className="inline-flex items-center space-x-2 bg-white px-4 py-2 rounded-full shadow-sm mb-6">
-              <Sparkles className="w-4 h-4 text-gabon-yellow" />
-              <span className="text-sm font-medium text-neutral-gray-dark">
+            <div className="inline-flex items-center space-x-2 bg-white px-3 py-1.5 sm:px-4 sm:py-2 rounded-full shadow-sm mb-4 sm:mb-6">
+              <Sparkles className="w-3 h-3 sm:w-4 sm:h-4 text-gabon-yellow flex-shrink-0" />
+              <span className="text-xs sm:text-sm font-medium text-neutral-gray-dark">
                 Plateforme modernisée avec IA
               </span>
             </div>
 
             {/* Main Title */}
-            <h1 className="text-5xl lg:text-6xl font-bold text-neutral-black mb-6 leading-tight">
+            <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-neutral-black mb-4 sm:mb-6 leading-tight">
               {heroConfig.title}{' '}
               <span className="text-gradient">à portée de clic</span>
             </h1>
 
             {/* Subtitle */}
-            <p className="text-xl text-neutral-gray-dark mb-8 leading-relaxed">
+            <p className="text-base sm:text-lg md:text-xl text-neutral-gray-dark mb-6 sm:mb-8 leading-relaxed">
               {heroConfig.subtitle}
             </p>
 
             {/* AI Search Bar */}
-            <div className="mb-6">
+            <div className="mb-6 sm:mb-8">
               <form onSubmit={handleSearch} className="relative">
-                <div className={`relative bg-white rounded-2xl shadow-lg transition-all duration-300 ${
+                <div className={`relative bg-white rounded-xl sm:rounded-2xl shadow-lg transition-all duration-300 ${
                   isFocused ? 'shadow-2xl ring-2 ring-gabon-green' : ''
                 }`}>
-                  <div className="flex items-center px-6 py-4">
-                    <Search className="w-6 h-6 text-gabon-green flex-shrink-0" />
-                    <input
-                      type="text"
-                      value={searchQuery}
-                      onChange={(e) => setSearchQuery(e.target.value)}
-                      onFocus={() => setIsFocused(true)}
-                      onBlur={() => setTimeout(() => setIsFocused(false), 200)}
-                      placeholder="Posez une question à notre assistant virtuel..."
-                      className="flex-1 ml-4 text-lg outline-none text-neutral-black placeholder-neutral-gray-dark"
-                    />
+                  {/* Mobile: Vertical Layout */}
+                  <div className="flex flex-col sm:flex-row sm:items-center px-4 sm:px-6 py-3 sm:py-4 gap-3 sm:gap-0">
+                    <div className="flex items-center flex-1">
+                      <Search className="w-5 h-5 sm:w-6 sm:h-6 text-gabon-green flex-shrink-0" />
+                      <input
+                        type="text"
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)}
+                        onFocus={() => setIsFocused(true)}
+                        onBlur={() => setTimeout(() => setIsFocused(false), 200)}
+                        placeholder="Posez une question..."
+                        className="flex-1 ml-3 sm:ml-4 text-base sm:text-lg outline-none text-neutral-black placeholder-neutral-gray-dark"
+                      />
+                    </div>
                     <button
                       type="submit"
-                      className="ml-4 bg-gabon-green text-white px-6 py-2 rounded-xl font-medium hover:bg-gabon-green-dark transition-colors flex items-center space-x-2"
+                      className="w-full sm:w-auto sm:ml-4 bg-gabon-green text-white px-4 sm:px-6 py-2.5 sm:py-2 rounded-lg sm:rounded-xl font-medium hover:bg-gabon-green-dark transition-colors flex items-center justify-center space-x-2"
                     >
-                      <span>Rechercher</span>
+                      <span className="text-sm sm:text-base">Rechercher</span>
                       <ArrowRight className="w-4 h-4" />
                     </button>
                   </div>
@@ -117,17 +120,17 @@ const HeroSection = () => {
                   <motion.div
                     initial={{ opacity: 0, y: -10 }}
                     animate={{ opacity: 1, y: 0 }}
-                    className="absolute top-full left-0 right-0 mt-2 bg-white rounded-xl shadow-xl border border-neutral-gray-light p-4 z-20"
+                    className="absolute top-full left-0 right-0 mt-2 bg-white rounded-xl shadow-xl border border-neutral-gray-light p-3 sm:p-4 z-20"
                   >
-                    <p className="text-sm font-medium text-neutral-gray-dark mb-3">
+                    <p className="text-xs sm:text-sm font-medium text-neutral-gray-dark mb-2 sm:mb-3">
                       Questions fréquentes :
                     </p>
-                    <div className="space-y-2">
+                    <div className="space-y-1.5 sm:space-y-2">
                       {suggestedQuestions.map((question, index) => (
                         <button
                           key={index}
                           onClick={() => setSearchQuery(question)}
-                          className="w-full text-left px-4 py-2 rounded-lg hover:bg-gabon-green-light text-sm text-neutral-black transition-colors"
+                          className="w-full text-left px-3 sm:px-4 py-2 rounded-lg hover:bg-gabon-green-light text-xs sm:text-sm text-neutral-black transition-colors"
                         >
                           {question}
                         </button>
@@ -138,21 +141,21 @@ const HeroSection = () => {
               </form>
             </div>
 
-            {/* Stats */}
-            <div className="flex items-center space-x-8">
-              <div>
-                <p className="text-3xl font-bold text-gabon-green">5</p>
-                <p className="text-sm text-neutral-gray-dark">Universités Publiques</p>
+            {/* Stats - Grid on mobile */}
+            <div className="grid grid-cols-3 gap-4 sm:flex sm:items-center sm:space-x-6 md:space-x-8">
+              <div className="text-center sm:text-left">
+                <p className="text-2xl sm:text-3xl font-bold text-gabon-green">5</p>
+                <p className="text-xs sm:text-sm text-neutral-gray-dark">Universités Publiques</p>
               </div>
-              <div className="w-px h-12 bg-neutral-gray-light"></div>
-              <div>
-                <p className="text-3xl font-bold text-gabon-green">8</p>
-                <p className="text-sm text-neutral-gray-dark">Grandes Écoles</p>
+              <div className="hidden sm:block w-px h-12 bg-neutral-gray-light"></div>
+              <div className="text-center sm:text-left">
+                <p className="text-2xl sm:text-3xl font-bold text-gabon-green">8</p>
+                <p className="text-xs sm:text-sm text-neutral-gray-dark">Grandes Écoles</p>
               </div>
-              <div className="w-px h-12 bg-neutral-gray-light"></div>
-              <div>
-                <p className="text-3xl font-bold text-gabon-green">64</p>
-                <p className="text-sm text-neutral-gray-dark">Établissements Privés</p>
+              <div className="hidden sm:block w-px h-12 bg-neutral-gray-light"></div>
+              <div className="text-center sm:text-left">
+                <p className="text-2xl sm:text-3xl font-bold text-gabon-green">64</p>
+                <p className="text-xs sm:text-sm text-neutral-gray-dark">Établissements Privés</p>
               </div>
             </div>
           </motion.div>
@@ -186,21 +189,21 @@ const HeroSection = () => {
                 
                 {/* Overlay Text (Optional) */}
                 <div className="absolute inset-0 bg-black/20 flex items-center justify-center">
-                  <div className="text-center text-white p-12 backdrop-blur-sm bg-black/10 rounded-3xl border border-white/10">
-                    <div className="w-24 h-24 bg-white/20 rounded-full mx-auto mb-4 flex items-center justify-center backdrop-blur-md animate-pulse-slow">
-                       {heroConfig.media_type === 'video' ? <Sparkles className="w-10 h-10" /> : <Search className="w-10 h-10" />}
+                  <div className="text-center text-white p-8 sm:p-12 backdrop-blur-sm bg-black/10 rounded-3xl border border-white/10">
+                    <div className="w-20 h-20 sm:w-24 sm:h-24 bg-white/20 rounded-full mx-auto mb-4 flex items-center justify-center backdrop-blur-md animate-pulse-slow">
+                       {heroConfig.media_type === 'video' ? <Sparkles className="w-8 h-8 sm:w-10 sm:h-10" /> : <Search className="w-8 h-8 sm:w-10 sm:h-10" />}
                     </div>
-                    <p className="text-2xl font-bold mb-2">Portail DGES</p>
-                    <p className="text-white/90 text-sm">Enseignement Supérieur Connecté</p>
+                    <p className="text-xl sm:text-2xl font-bold mb-2">Portail DGES</p>
+                    <p className="text-white/90 text-xs sm:text-sm">Enseignement Supérieur Connecté</p>
                   </div>
                 </div>
               </div>
 
-              {/* Floating Cards */}
+              {/* Floating Cards - Hidden on small screens to avoid clutter */}
               <motion.div
                 animate={{ y: [0, -10, 0] }}
                 transition={{ duration: 3, repeat: Infinity }}
-                className="absolute -top-6 -left-6 bg-white rounded-xl shadow-xl p-4 w-48"
+                className="hidden xl:block absolute -top-6 -left-6 bg-white rounded-xl shadow-xl p-4 w-48"
               >
                 <div className="flex items-center space-x-3">
                   <div className="w-10 h-10 bg-gabon-green-light rounded-lg flex items-center justify-center">
@@ -216,7 +219,7 @@ const HeroSection = () => {
               <motion.div
                 animate={{ y: [0, 10, 0] }}
                 transition={{ duration: 3, repeat: Infinity, delay: 1 }}
-                className="absolute -bottom-6 -right-6 bg-white rounded-xl shadow-xl p-4 w-48"
+                className="hidden xl:block absolute -bottom-6 -right-6 bg-white rounded-xl shadow-xl p-4 w-48"
               >
                 <div className="flex items-center space-x-3">
                   <div className="w-10 h-10 bg-gabon-yellow-light rounded-lg flex items-center justify-center">

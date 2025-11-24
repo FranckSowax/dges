@@ -27,18 +27,18 @@ const Header = () => {
     <header 
       className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
         isScrolled 
-          ? 'bg-white shadow-md py-3' 
-          : 'bg-white/95 backdrop-blur-sm py-4'
+          ? 'bg-white shadow-md py-2 sm:py-3' 
+          : 'bg-white/95 backdrop-blur-sm py-3 sm:py-4'
       }`}
     >
       <div className="container-custom">
         <div className="flex items-center justify-between">
           {/* Logo */}
-          <Link to="/" className="hover:opacity-90 transition-opacity">
+          <Link to="/" className="hover:opacity-90 transition-opacity flex-shrink-0">
             <img 
               src="/LOGO-DGES-2-1.png" 
               alt="Logo DGES Gabon" 
-              className="h-24 w-auto object-contain"
+              className="h-16 sm:h-20 md:h-24 w-auto object-contain"
             />
           </Link>
 
@@ -116,7 +116,7 @@ const Header = () => {
             <div className="relative hidden md:block">
               <button
                 onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
-                className="flex items-center space-x-2 bg-gabon-green text-white px-4 py-2 rounded-full font-medium hover:bg-gabon-green-dark transition-all duration-200 shadow-sm hover:shadow-md"
+                className="flex items-center space-x-2 bg-gabon-green text-white px-3 md:px-4 py-2 rounded-full font-medium hover:bg-gabon-green-dark transition-all duration-200 shadow-sm hover:shadow-md text-sm"
               >
                 <User className="w-4 h-4" />
                 <span className="hidden xl:inline">Mon Compte</span>
@@ -147,33 +147,38 @@ const Header = () => {
             {/* Mobile Menu Toggle */}
             <button
               onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-              className="lg:hidden flex items-center justify-center w-9 h-9 rounded-lg hover:bg-neutral-gray-light transition-colors"
+              className="lg:hidden flex items-center justify-center w-10 h-10 rounded-lg hover:bg-neutral-gray-light transition-colors"
             >
               {isMobileMenuOpen ? (
-                <X className="w-5 h-5 text-neutral-black" />
+                <X className="w-6 h-6 text-neutral-black" />
               ) : (
-                <Menu className="w-5 h-5 text-neutral-black" />
+                <Menu className="w-6 h-6 text-neutral-black" />
               )}
             </button>
           </div>
         </div>
 
-        {/* Mobile Menu */}
+        {/* Mobile Menu - Improved */}
         {isMobileMenuOpen && (
-          <div className="lg:hidden mt-4 pb-4 border-t border-neutral-gray-light pt-4">
+          <div className="lg:hidden mt-4 pb-4 border-t border-neutral-gray-light pt-4 max-h-[70vh] overflow-y-auto">
             <nav className="flex flex-col space-y-1">
               {navigationData.map((item) => (
                 <Link
                   key={item.id}
                   to={item.href || '#'}
-                  className="px-4 py-2.5 rounded-lg text-sm text-neutral-gray-dark hover:bg-gabon-green-light hover:text-gabon-green transition-colors font-medium"
+                  onClick={() => setIsMobileMenuOpen(false)}
+                  className="px-4 py-3 rounded-lg text-sm text-neutral-gray-dark hover:bg-gabon-green-light hover:text-gabon-green transition-colors font-medium active:scale-95"
                 >
                   {item.label}
                 </Link>
               ))}
-              <div className="pt-3 border-t border-neutral-gray-light mt-3">
-                <button className="w-full bg-gabon-green text-white px-4 py-2.5 rounded-full font-medium hover:bg-gabon-green-dark transition-all duration-200 text-sm">
+              <div className="pt-3 border-t border-neutral-gray-light mt-3 space-y-2">
+                <button className="w-full bg-gabon-green text-white px-4 py-3 rounded-xl font-medium hover:bg-gabon-green-dark transition-all duration-200 text-sm active:scale-95">
                   Mon Compte
+                </button>
+                <button className="w-full bg-neutral-gray-light text-neutral-black px-4 py-3 rounded-xl font-medium hover:bg-neutral-gray transition-all duration-200 text-sm flex items-center justify-center gap-2 active:scale-95">
+                  <Search className="w-4 h-4" />
+                  Rechercher
                 </button>
               </div>
             </nav>
