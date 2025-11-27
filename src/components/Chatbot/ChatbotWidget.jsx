@@ -28,6 +28,7 @@ const ChatbotWidget = ({ isOpenExternal, onToggle }) => {
     }
   ]);
   const [inputValue, setInputValue] = useState('');
+  const [isTyping, setIsTyping] = useState(false);
 
   const quickActions = [
     'Demander une bourse',
@@ -36,11 +37,10 @@ const ChatbotWidget = ({ isOpenExternal, onToggle }) => {
     'Contact DGES'
   ];
 
-  const handleSendMessage = (e) => {
+  const handleSendMessage = async (e) => {
     e.preventDefault();
     if (!inputValue.trim()) return;
 
-    // Add user message
     const userMessage = {
       id: messages.length + 1,
       type: 'user',
@@ -48,19 +48,43 @@ const ChatbotWidget = ({ isOpenExternal, onToggle }) => {
       timestamp: new Date()
     };
 
-    setMessages([...messages, userMessage]);
+    setMessages(prev => [...prev, userMessage]);
     setInputValue('');
+    setIsTyping(true);
 
-    // Simulate bot response
-    setTimeout(() => {
+    try {
+      const response = await fetch('/.netlify/functions/chat', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ query: userMessage.content }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) throw new Error(data.error || 'Erreur de communication');
+
       const botMessage = {
         id: messages.length + 2,
         type: 'bot',
-        content: 'Je traite votre demande... Cette fonctionnalité sera bientôt disponible avec l\'intégration de l\'IA.',
+        content: data.answer || "Désolé, je n'ai pas pu obtenir de réponse. Veuillez réessayer.",
         timestamp: new Date()
       };
       setMessages(prev => [...prev, botMessage]);
-    }, 1000);
+      
+    } catch (error) {
+      console.error('Erreur Chatbot:', error);
+      const errorMessage = {
+        id: messages.length + 2,
+        type: 'bot',
+        content: "Désolé, je rencontre un problème technique pour le moment. Pouvez-vous reformuler ?",
+        timestamp: new Date()
+      };
+      setMessages(prev => [...prev, errorMessage]);
+    } finally {
+      setIsTyping(false);
+    }
   };
 
   const handleQuickAction = (action) => {
@@ -142,6 +166,29 @@ const ChatbotWidget = ({ isOpenExternal, onToggle }) => {
                   </div>
                 </div>
               ))}
+              
+              {/* Typing Indicator */}
+              {isTyping && (
+                <div className="flex justify-start">
+                  <div className="bg-white shadow-sm text-neutral-black rounded-2xl px-4 py-3 flex items-center space-x-1">
+                    <motion.div
+                      className="w-2 h-2 bg-neutral-gray-dark rounded-full"
+                      animate={{ y: [0, -5, 0] }}
+                      transition={{ duration: 0.6, repeat: Infinity, delay: 0 }}
+                    />
+                    <motion.div
+                      className="w-2 h-2 bg-neutral-gray-dark rounded-full"
+                      animate={{ y: [0, -5, 0] }}
+                      transition={{ duration: 0.6, repeat: Infinity, delay: 0.2 }}
+                    />
+                    <motion.div
+                      className="w-2 h-2 bg-neutral-gray-dark rounded-full"
+                      animate={{ y: [0, -5, 0] }}
+                      transition={{ duration: 0.6, repeat: Infinity, delay: 0.4 }}
+                    />
+                  </div>
+                </div>
+              )}
             </div>
 
             {/* Quick Actions */}
