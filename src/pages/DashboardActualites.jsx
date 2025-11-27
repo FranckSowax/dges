@@ -250,6 +250,17 @@ const DashboardActualites = () => {
               </div>
 
               <div>
+                <label className="block text-sm font-medium text-neutral-gray-dark mb-2">Date de publication</label>
+                <input
+                  type="date"
+                  required
+                  value={formData.published_at}
+                  onChange={e => setFormData({...formData, published_at: e.target.value})}
+                  className="w-full px-4 py-2 rounded-lg border border-neutral-gray-light focus:border-gabon-yellow focus:ring-2 focus:ring-gabon-yellow/20 outline-none transition-all"
+                />
+              </div>
+
+              <div>
                 <label className="block text-sm font-medium text-neutral-gray-dark mb-2">Contenu</label>
                 <textarea
                   rows="6"
