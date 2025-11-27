@@ -1,7 +1,15 @@
 import React from 'react'
 import ReactDOM from 'react-dom/client'
 import { BrowserRouter, Routes, Route } from 'react-router-dom'
+import { AuthProvider } from './context/AuthContext'
+import ProtectedRoute from './components/Auth/ProtectedRoute'
+
 import App from './App.jsx'
+import Login from './pages/Auth/Login.jsx'
+import Register from './pages/Auth/Register.jsx'
+import StudentDashboard from './pages/Student/Dashboard.jsx'
+import ApplicationForm from './pages/Student/ApplicationForm.jsx'
+
 import Organigramme from './pages/Organigramme.jsx'
 import AnnuaireResponsables from './pages/AnnuaireResponsables.jsx'
 import AttributionOrganisation from './pages/AttributionOrganisation.jsx'
@@ -24,10 +32,34 @@ import './index.css'
 
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>
-    <BrowserRouter>
-      <Routes>
-        <Route path="/" element={<App />} />
-        <Route path="/dges/organigramme" element={<Organigramme />} />
+    <AuthProvider>
+      <BrowserRouter>
+        <Routes>
+          <Route path="/" element={<App />} />
+          
+          {/* Auth Routes */}
+          <Route path="/auth/login" element={<Login />} />
+          <Route path="/auth/register" element={<Register />} />
+          
+          {/* Student Routes (Protected) */}
+          <Route path="/etudiant/dashboard" element={
+            <ProtectedRoute>
+              <StudentDashboard />
+            </ProtectedRoute>
+          } />
+          <Route path="/etudiant/demandes" element={
+            <ProtectedRoute>
+              <StudentDashboard /> 
+              {/* À remplacer par une liste de demandes si on veut une page dédiée, sinon dashboard suffit pour l'instant */}
+            </ProtectedRoute>
+          } />
+          <Route path="/etudiant/demandes/nouvelle" element={
+            <ProtectedRoute>
+              <ApplicationForm />
+            </ProtectedRoute>
+          } />
+
+          <Route path="/dges/organigramme" element={<Organigramme />} />
         <Route path="/dges/responsables" element={<AnnuaireResponsables />} />
         <Route path="/dges/attribution-organisation" element={<AttributionOrganisation />} />
         <Route path="/universites" element={<AnnuaireUniversites />} />
@@ -55,7 +87,8 @@ ReactDOM.createRoot(document.getElementById('root')).render(
         <Route path="/dashboard/universites" element={<DashboardEtablissements />} />
         <Route path="/dashboard/cooperation" element={<DashboardConventions />} />
         <Route path="/dashboard/actualites" element={<DashboardActualites />} />
-      </Routes>
-    </BrowserRouter>
+        </Routes>
+      </BrowserRouter>
+    </AuthProvider>
   </React.StrictMode>,
 )
