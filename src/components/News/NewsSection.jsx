@@ -23,37 +23,7 @@ const NewsSection = () => {
 
       if (error) throw error;
 
-      if (data && data.length > 0) {
-        setNews(data);
-      } else {
-        // Données de repli si la base est vide
-        setNews([
-          {
-            id: 1,
-            title: 'Lancement de la campagne de bourses 2024',
-            excerpt: 'Les demandes de bourses nationales et internationales sont ouvertes jusqu\'au 30 décembre. Préparez vos dossiers dès maintenant.',
-            published_at: new Date().toISOString(),
-            category: 'Bourses',
-            image_url: 'https://images.unsplash.com/photo-1523050854058-8df90110c9f1?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80'
-          },
-          {
-            id: 2,
-            title: 'Nouveau calendrier académique disponible',
-            excerpt: 'Le calendrier de l\'année universitaire 2024-2025 a été validé par le ministère. Consultez les dates clés des examens et vacances.',
-            published_at: new Date(Date.now() - 86400000 * 5).toISOString(), // Il y a 5 jours
-            category: 'Scolarité',
-            image_url: 'https://images.unsplash.com/photo-1506784335131-d6959de13526?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80'
-          },
-          {
-            id: 3,
-            title: 'Forum de l\'Orientation : Édition 2024',
-            excerpt: 'Venez rencontrer les représentants des grandes écoles et universités gabonaises au Jardin Botanique de Libreville.',
-            published_at: new Date(Date.now() - 86400000 * 12).toISOString(), // Il y a 12 jours
-            category: 'Événement',
-            image_url: 'https://images.unsplash.com/photo-1523580494863-6f3031224c94?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80'
-          }
-        ]);
-      }
+      setNews(data || []);
     } catch (error) {
       console.error('Erreur lors du chargement des actualités:', error);
     } finally {
@@ -118,13 +88,13 @@ const NewsSection = () => {
                 <div className="relative h-48 overflow-hidden">
                   <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent z-10" />
                   <img
-                    src={item.image_url || 'https://via.placeholder.com/800x400?text=DGES+Gabon'}
+                    src={item.image_url}
                     alt={item.title}
                     className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                   />
                   <div className="absolute top-4 left-4 z-20">
                     <span className="px-3 py-1 bg-gabon-green text-white text-xs font-bold rounded-full">
-                      {item.category || 'Actualité'}
+                      {item.category}
                     </span>
                   </div>
                 </div>
@@ -161,6 +131,85 @@ const NewsSection = () => {
           </button>
         </div>
       </div>
+
+      {/* Article Modal */}
+      <AnimatePresence>
+        {selectedArticle && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6">
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setSelectedArticle(null)}
+              className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+            />
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 20 }}
+              className="relative bg-white w-full max-w-4xl max-h-[90vh] rounded-2xl shadow-2xl overflow-hidden flex flex-col"
+            >
+              {/* Modal Header Image */}
+              <div className="relative h-64 sm:h-80 shrink-0">
+                <img
+                  src={selectedArticle.image_url}
+                  alt={selectedArticle.title}
+                  className="w-full h-full object-cover"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
+                <button
+                  onClick={() => setSelectedArticle(null)}
+                  className="absolute top-4 right-4 p-2 bg-black/30 hover:bg-black/50 text-white rounded-full backdrop-blur-md transition-colors"
+                >
+                  <X className="w-6 h-6" />
+                </button>
+                <div className="absolute bottom-0 left-0 p-6 text-white">
+                  <span className="inline-block px-3 py-1 bg-gabon-green text-xs font-bold rounded-full mb-3">
+                    {selectedArticle.category || 'Actualité'}
+                  </span>
+                  <h3 className="text-2xl sm:text-3xl font-bold leading-tight mb-2">
+                    {selectedArticle.title}
+                  </h3>
+                  <div className="flex items-center gap-2 text-sm opacity-90">
+                    <Calendar className="w-4 h-4" />
+                    <time>{formatDate(selectedArticle.published_at)}</time>
+                  </div>
+                </div>
+              </div>
+
+              {/* Modal Content */}
+              <div className="p-6 sm:p-8 overflow-y-auto">
+                <div className="prose max-w-none text-neutral-gray-dark">
+                  <p className="text-lg font-medium text-neutral-black mb-6 leading-relaxed">
+                    {selectedArticle.excerpt}
+                  </p>
+                  <div className="whitespace-pre-wrap leading-relaxed">
+                    {selectedArticle.content || "Contenu de l'article non disponible."}
+                  </div>
+                </div>
+
+                {/* Gallery Section */}
+                {selectedArticle.gallery_images && selectedArticle.gallery_images.length > 0 && (
+                  <div className="mt-12 pt-8 border-t border-neutral-gray-light">
+                    <h4 className="text-xl font-bold text-neutral-black mb-6">Galerie Photos</h4>
+                    <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                      {selectedArticle.gallery_images.map((img, idx) => (
+                        <div key={idx} className="aspect-video rounded-xl overflow-hidden bg-neutral-background group cursor-pointer">
+                          <img
+                            src={img}
+                            alt={`Galerie ${idx + 1}`}
+                            className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                          />
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
     </section>
   );
 };

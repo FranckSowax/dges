@@ -3,6 +3,7 @@ import { Plus, Search, Newspaper, Trash2, Edit2, Star, X, Save, Loader } from 'l
 import DashboardLayout from '../layouts/DashboardLayout';
 import { supabase } from '../supabaseClient';
 import ImageUpload from '../components/Dashboard/ImageUpload';
+import GalleryUpload from '../components/Dashboard/GalleryUpload';
 
 const DashboardActualites = () => {
   const [news, setNews] = useState([]);
@@ -19,11 +20,6 @@ const DashboardActualites = () => {
     image_url: '',
     is_featured: false
   });
-
-  const mockNews = [
-    { id: 1, title: "Lancement de la campagne de bourses 2024", date: "2024-03-20", is_featured: true },
-    { id: 2, title: "Visite du Ministre à l'USTM", date: "2024-03-18", is_featured: false }
-  ];
 
   useEffect(() => {
     fetchNews();
@@ -53,7 +49,7 @@ const DashboardActualites = () => {
       const { data, error } = await supabase
         .from('news')
         .select('*')
-        .order('created_at', { ascending: false });
+        .order('published_at', { ascending: false });
 
       if (error) throw error;
       setNews(data || []);
@@ -192,7 +188,7 @@ const DashboardActualites = () => {
                     )}
                   </td>
                   <td className="px-6 py-4 text-sm text-neutral-gray-dark">
-                    {item.date || new Date(item.created_at).toLocaleDateString()}
+                    {item.published_at ? new Date(item.published_at).toLocaleDateString() : '-'}
                   </td>
                   <td className="px-6 py-4 text-center">
                     <button 
