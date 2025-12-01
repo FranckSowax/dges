@@ -1,5 +1,8 @@
 const { GoogleGenAI } = require('@google/genai');
 const { createClient } = require('@supabase/supabase-js');
+const fs = require('fs');
+const path = require('path');
+const os = require('os');
 
 // Environment variables
 const geminiApiKey = process.env.GEMINI_API_KEY;
@@ -121,17 +124,32 @@ exports.handler = async (event, context) => {
       console.log('Uploading to Gemini File Search Store:', fileSearchStoreName);
       console.log('File:', fileName, 'MimeType:', mimeType, 'Size:', buffer.length);
 
-      // Create a Blob-like object for the SDK
-      const fileBlob = new Blob([buffer], { type: mimeType });
+      // Write to temp file
+      const tempFilePath = path.join(os.tmpdir(), fileName);
+      fs.writeFileSync(tempFilePath, buffer);
+      console.log('Temp file written to:', tempFilePath);
 
-      let operation = await ai.fileSearchStores.uploadToFileSearchStore({
-        fileSearchStoreName: fileSearchStoreName,
-        file: fileBlob,
-        config: {
-          displayName: fileName,
-          mimeType: mimeType
+      let operation;
+      try {
+        operation = await ai.fileSearchStores.uploadToFileSearchStore({
+          fileSearchStoreName: fileSearchStoreName,
+          file: tempFilePath,
+          config: {
+            displayName: fileName,
+            mimeType: mimeType
+          }
+        });
+      } finally {
+        // Cleanup temp file
+        try {
+          if (fs.existsSync(tempFilePath)) {
+            fs.unlinkSync(tempFilePath);
+            console.log('Temp file removed');
+          }
+        } catch (e) {
+          console.warn('Failed to remove temp file:', e);
         }
-      });
+      }
 
       // Poll for completion (max 60 seconds)
       let attempts = 0;
