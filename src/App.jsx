@@ -4,6 +4,7 @@ import HeroSection from './components/Hero/HeroSection';
 import ServicesGrid from './components/Services/ServicesGrid';
 import NewsSection from './components/News/NewsSection';
 import StatsSection from './components/Stats/StatsSection';
+import ParallaxSection from './components/Parallax/ParallaxSection';
 import PartnersCarousel from './components/Partners/PartnersCarousel';
 import AIChatCTA from './components/AI/AIChatCTA';
 import Footer from './components/Footer/Footer';
@@ -18,6 +19,7 @@ function AppContent() {
         <HeroSection />
         <NewsSection />
         <ServicesGrid />
+        <ParallaxSection />
         <StatsSection />
         <PartnersCarousel />
         <AIChatCTA />
