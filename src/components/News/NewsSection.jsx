@@ -1,11 +1,12 @@
 import React, { useEffect, useState } from 'react';
-import { motion } from 'framer-motion';
-import { Calendar, ArrowRight, Loader } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Calendar, ArrowRight, Loader, X } from 'lucide-react';
 import { supabase } from '../../supabaseClient';
 
 const NewsSection = () => {
   const [news, setNews] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [selectedArticle, setSelectedArticle] = useState(null);
 
   useEffect(() => {
     fetchNews();
