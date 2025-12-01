@@ -5,11 +5,16 @@ const { createClient } = require('@supabase/supabase-js');
 const geminiApiKey = process.env.GEMINI_API_KEY;
 const fileSearchStoreName = process.env.GEMINI_FILE_SEARCH_STORE_NAME;
 const supabaseUrl = process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL;
-const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.VITE_SUPABASE_ANON_KEY;
 
 // Initialize clients
 const ai = new GoogleGenAI({ apiKey: geminiApiKey });
-const supabase = createClient(supabaseUrl, supabaseServiceKey);
+
+// Initialize Supabase only if we have valid credentials
+let supabase = null;
+if (supabaseUrl && supabaseKey) {
+  supabase = createClient(supabaseUrl, supabaseKey);
+}
 
 exports.handler = async (event, context) => {
   // CORS headers
