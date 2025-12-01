@@ -1,13 +1,12 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { MessageSquare, X, Send, Loader, Sparkles, User, Bot } from 'lucide-react';
+import { MessageSquare, X, Send, Loader, Sparkles, User, Bot, Zap } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { supabase } from '../../supabaseClient';
 import { useChat } from '../../context/ChatContext';
 
 const ChatBot = () => {
   const { isOpen, toggleChat } = useChat();
   const [messages, setMessages] = useState([
-    { id: 1, type: 'bot', content: 'Bonjour ! Je suis l\'assistant virtuel de la DGES. Comment puis-je vous aider aujourd\'hui ?' }
+    { id: 1, type: 'bot', content: 'Bonjour ! Je suis l\'assistant virtuel de la DGES, propulsé par Gemini AI. Comment puis-je vous aider aujourd\'hui ?' }
   ]);
   const [inputValue, setInputValue] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -36,11 +35,22 @@ const ChatBot = () => {
     setIsLoading(true);
 
     try {
-      // Call Netlify Function 'chat'
-      const response = await fetch('/.netlify/functions/chat', {
+      // Préparer l'historique de conversation pour le contexte
+      const conversationHistory = messages
+        .filter(m => m.id !== 1) // Exclure le message d'accueil
+        .map(m => ({
+          role: m.type === 'user' ? 'user' : 'assistant',
+          content: m.content
+        }));
+
+      // Appeler la fonction Gemini Chat (nouveau RAG)
+      const response = await fetch('/.netlify/functions/gemini-chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ query: userMessage.content })
+        body: JSON.stringify({ 
+          query: userMessage.content,
+          conversationHistory: conversationHistory
+        })
       });
 
       const data = await response.json();
@@ -53,7 +63,9 @@ const ChatBot = () => {
         id: Date.now() + 1,
         type: 'bot',
         content: data.answer || "Désolé, je n'ai pas pu obtenir de réponse.",
-        sources: data.sources
+        sources: data.sources,
+        model: data.model,
+        ragEnabled: data.ragEnabled
       };
 
       setMessages(prev => [...prev, botResponse]);
@@ -143,10 +155,19 @@ const ChatBot = () => {
                         <div className="flex flex-wrap gap-1">
                             {msg.sources.map((source, idx) => (
                                 <span key={idx} className="text-[10px] bg-gray-100 px-2 py-0.5 rounded-full text-gray-600 truncate max-w-[150px]">
-                                    {source.content.substring(0, 20)}...
+                                    {source.title || (source.content ? source.content.substring(0, 25) + '...' : `Source ${idx + 1}`)}
                                 </span>
                             ))}
                         </div>
+                      </div>
+                    )}
+                    
+                    {/* Model indicator */}
+                    {msg.model && (
+                      <div className="mt-2 flex items-center gap-1 text-[9px] text-gray-400">
+                        <Zap className="w-3 h-3" />
+                        <span>{msg.model}</span>
+                        {msg.ragEnabled && <span className="ml-1 px-1.5 py-0.5 bg-purple-100 text-purple-600 rounded">RAG</span>}
                       </div>
                     )}
                   </div>

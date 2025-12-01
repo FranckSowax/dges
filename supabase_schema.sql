@@ -1,28 +1,27 @@
--- Activer l'extension pgvector pour stocker les vecteurs d'embeddings (nécessaire pour l'IA)
-create extension if not exists vector;
+-- ============================================================
+-- SCHÉMA SUPABASE - DGES GABON PORTAL
+-- ============================================================
+-- Version: 2.0 - Gemini RAG Integration
+-- Date: Décembre 2024
+-- ============================================================
 
--- 1. Table pour les documents (PDFs, Pages web, etc.)
+-- 1. Table pour les documents (Gemini RAG)
+-- Les embeddings et le chunking sont gérés par Gemini File Search
 create table if not exists documents (
-  id bigserial primary key,
+  id uuid primary key default gen_random_uuid(),
   title text not null,
-  url text not null, -- Lien vers le fichier ou la page
-  category text not null, -- ex: 'Bourse', 'Inscription', 'Guide'
+  category text default 'Gemini RAG',
+  file_url text, -- Chemin dans Supabase Storage (backup)
+  gemini_document_name text, -- Référence dans Gemini File Search Store
   created_at timestamptz default now(),
   updated_at timestamptz default now()
 );
 
--- 2. Table pour les sections de documents (Chunks) avec Embeddings
--- C'est ici que l'IA ira chercher les réponses
-create table if not exists document_sections (
-  id bigserial primary key,
-  document_id bigint references documents(id) on delete cascade,
-  content text not null, -- Le texte brut de la section
-  embedding vector(1536), -- Le vecteur généré par OpenAI (1536 dimensions)
-  token_count int, -- Utile pour gérer la fenêtre de contexte
-  created_at timestamptz default now()
-);
+-- Index pour les recherches
+create index if not exists idx_documents_category on documents(category);
+create index if not exists idx_documents_created_at on documents(created_at desc);
 
--- 3. Table pour les établissements partenaires
+-- 2. Table pour les établissements partenaires
 create table if not exists partners (
   id bigserial primary key,
   name text not null,
@@ -44,52 +43,18 @@ create table if not exists news (
   is_featured boolean default false
 );
 
--- Index pour la recherche vectorielle rapide (IVFFlat)
--- Cela permet au chatbot de trouver les réponses en millisecondes
-create index on document_sections using ivfflat (embedding vector_cosine_ops)
-with (lists = 100);
-
--- Fonction de recherche vectorielle (Similitude Cosinus)
--- Cette fonction sera appelée par votre backend Python/LangChain
-create or replace function match_documents (
-  query_embedding vector(1536),
-  match_threshold float,
-  match_count int
-)
-returns table (
-  id bigint,
-  content text,
-  similarity float,
-  document_title text,
-  document_url text
-)
-language plpgsql
-as $$
-begin
-  return query
-  select
-    ds.id,
-    ds.content,
-    1 - (ds.embedding <=> query_embedding) as similarity,
-    d.title as document_title,
-    d.url as document_url
-  from document_sections ds
-  join documents d on ds.document_id = d.id
-  where 1 - (ds.embedding <=> query_embedding) > match_threshold
-  order by ds.embedding <=> query_embedding
-  limit match_count;
-end;
-$$;
-
 -- Sécurité : Activer RLS (Row Level Security)
 alter table documents enable row level security;
-alter table document_sections enable row level security;
 alter table partners enable row level security;
 alter table news enable row level security;
 
--- Politiques de lecture publique (Tout le monde peut lire)
-create policy "Public read access for documents" on documents for select using (true);
-create policy "Public read access for document_sections" on document_sections for select using (true);
+-- Politiques pour documents (CRUD complet pour Gemini RAG)
+create policy "Documents are viewable by everyone" on documents for select using (true);
+create policy "Documents can be inserted" on documents for insert with check (true);
+create policy "Documents can be updated" on documents for update using (true);
+create policy "Documents can be deleted" on documents for delete using (true);
+
+-- Politiques de lecture publique pour partners et news
 create policy "Public read access for partners" on partners for select using (true);
 create policy "Public read access for news" on news for select using (true);
 
