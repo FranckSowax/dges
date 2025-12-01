@@ -3,38 +3,41 @@ import { motion } from 'framer-motion';
 import { supabase } from '../../supabaseClient';
 
 const defaultPartners = [
-  { id: 1, name: 'Université Omar Bongo', logo: 'UOB' },
-  { id: 2, name: 'Université des Sciences et Techniques de Masuku', logo: 'USTM' },
-  { id: 3, name: 'École Normale Supérieure', logo: 'ENS' },
-  { id: 4, name: 'École Polytechnique de Masuku', logo: 'EPM' },
-  { id: 5, name: 'Institut Supérieur de Technologie', logo: 'IST' },
-  { id: 6, name: 'Université des Sciences de la Santé', logo: 'USS' },
-  { id: 7, name: 'École Nationale des Eaux et Forêts', logo: 'ENEF' },
-  { id: 8, name: 'Institut Africain d\'Informatique', logo: 'IAI' }
+  { id: 1, name: 'Université Omar Bongo', acronym: 'UOB', logo_url: null },
+  { id: 2, name: 'Université des Sciences et Techniques de Masuku', acronym: 'USTM', logo_url: null },
+  { id: 3, name: 'École Normale Supérieure', acronym: 'ENS', logo_url: null },
+  { id: 4, name: 'École Polytechnique de Masuku', acronym: 'EPM', logo_url: null },
+  { id: 5, name: 'Institut Supérieur de Technologie', acronym: 'IST', logo_url: null },
+  { id: 6, name: 'Université des Sciences de la Santé', acronym: 'USS', logo_url: null },
+  { id: 7, name: 'École Nationale des Eaux et Forêts', acronym: 'ENEF', logo_url: null },
+  { id: 8, name: 'Institut Africain d\'Informatique', acronym: 'IAI', logo_url: null }
 ];
 
 const PartnersCarousel = () => {
-  const [partners, setPartners] = useState(defaultPartners);
+  const [partners, setPartners] = useState([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchPartners = async () => {
       try {
         const { data, error } = await supabase
-          .from('partners')
-          .select('*');
+          .from('establishments')
+          .select('id, name, acronym, logo_url, type')
+          .eq('is_active', true)
+          .order('display_order', { ascending: true })
+          .limit(8);
 
         if (!error && data && data.length > 0) {
-          // Adapter le format des données si nécessaire
-          const formattedPartners = data.map(p => ({
-            id: p.id,
-            name: p.name,
-            logo: p.logo_url || p.name.substring(0, 3).toUpperCase() // Fallback si pas d'image
-          }));
-          setPartners(formattedPartners);
+          setPartners(data);
+        } else {
+          // Fallback aux données par défaut
+          setPartners(defaultPartners);
         }
       } catch (err) {
-        console.error('Erreur chargement partenaires:', err);
-        // On garde les partenaires par défaut en cas d'erreur
+        console.error('Erreur chargement établissements:', err);
+        setPartners(defaultPartners);
+      } finally {
+        setLoading(false);
       }
     };
 
@@ -70,13 +73,23 @@ const PartnersCarousel = () => {
               whileInView={{ opacity: 1, scale: 1 }}
               viewport={{ once: true }}
               transition={{ duration: 0.5, delay: index * 0.05 }}
-              className="bg-white rounded-card p-8 flex items-center justify-center hover:shadow-card-hover transition-all duration-300 group cursor-pointer"
+              className="bg-white rounded-card p-6 flex items-center justify-center hover:shadow-card-hover transition-all duration-300 group cursor-pointer"
             >
               <div className="text-center">
-                <div className="w-20 h-20 bg-gradient-to-br from-gabon-green to-gabon-blue rounded-full flex items-center justify-center mx-auto mb-3 group-hover:scale-110 transition-transform duration-300">
-                  <span className="text-white font-bold text-lg">{partner.logo}</span>
-                </div>
-                <p className="text-xs text-neutral-gray-dark font-medium">{partner.name}</p>
+                {partner.logo_url ? (
+                  <div className="w-20 h-20 rounded-full overflow-hidden mx-auto mb-3 group-hover:scale-110 transition-transform duration-300 border-2 border-neutral-gray-light">
+                    <img 
+                      src={partner.logo_url} 
+                      alt={partner.name}
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
+                ) : (
+                  <div className="w-20 h-20 bg-gradient-to-br from-gabon-green to-gabon-blue rounded-full flex items-center justify-center mx-auto mb-3 group-hover:scale-110 transition-transform duration-300">
+                    <span className="text-white font-bold text-lg">{partner.acronym}</span>
+                  </div>
+                )}
+                <p className="text-xs text-neutral-gray-dark font-medium line-clamp-2">{partner.name}</p>
               </div>
             </motion.div>
           ))}
