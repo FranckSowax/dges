@@ -99,7 +99,8 @@ exports.handler = async (event, context) => {
       }
 
       // Convert to buffer
-      const buffer = Buffer.from(await fileData.arrayBuffer());
+      const arrayBuffer = await fileData.arrayBuffer();
+      const buffer = Buffer.from(arrayBuffer);
 
       // Determine MIME type
       const extension = fileName.split('.').pop().toLowerCase();
@@ -110,24 +111,34 @@ exports.handler = async (event, context) => {
         'docx': 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
         'xlsx': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
         'csv': 'text/csv',
-        'md': 'text/markdown'
+        'md': 'text/markdown',
+        'html': 'text/html',
+        'json': 'application/json'
       };
-      const mimeType = mimeTypes[extension] || 'application/octet-stream';
+      const mimeType = mimeTypes[extension] || 'text/plain';
 
-      // Upload to Gemini File Search Store
-      let operation = await ai.fileSearchStores.uploadToFileSearchStore({
-        fileSearchStoreName: fileSearchStoreName,
+      // Step 1: Upload file to Gemini Files API first
+      const uploadedFile = await ai.files.upload({
         file: {
+          mimeType: mimeType,
           data: buffer,
-          mimeType: mimeType
+          name: fileName
         },
         config: {
-          displayName: fileName,
+          displayName: fileName
+        }
+      });
+
+      console.log('File uploaded to Gemini:', uploadedFile.name);
+
+      // Step 2: Import the file into the File Search Store
+      let operation = await ai.fileSearchStores.importFile({
+        fileSearchStoreName: fileSearchStoreName,
+        fileName: uploadedFile.name,
+        config: {
           chunkingConfig: {
-            whiteSpaceConfig: {
-              maxTokensPerChunk: 500,
-              maxOverlapTokens: 50
-            }
+            chunkSize: 500,
+            chunkOverlap: 50
           }
         }
       });
@@ -136,7 +147,7 @@ exports.handler = async (event, context) => {
       let attempts = 0;
       while (!operation.done && attempts < 12) {
         await new Promise(resolve => setTimeout(resolve, 5000));
-        operation = await ai.operations.get({ operation });
+        operation = await ai.operations.get({ operation: operation });
         attempts++;
       }
 
@@ -148,6 +159,7 @@ exports.handler = async (event, context) => {
           body: JSON.stringify({
             success: true,
             status: 'processing',
+            geminiFileName: uploadedFile.name,
             message: 'Fichier en cours de traitement par Gemini. Cela peut prendre quelques minutes.'
           })
         };
@@ -158,17 +170,19 @@ exports.handler = async (event, context) => {
       }
 
       // Save document reference to Supabase for tracking
-      const { error: dbError } = await supabase
-        .from('documents')
-        .insert({
-          title: fileName,
-          category: 'Gemini RAG',
-          file_url: fileUrl,
-          gemini_document_name: operation.response?.name || null
-        });
+      if (supabase) {
+        const { error: dbError } = await supabase
+          .from('documents')
+          .insert({
+            title: fileName,
+            category: 'Gemini RAG',
+            file_url: fileUrl,
+            gemini_document_name: uploadedFile.name
+          });
 
-      if (dbError) {
-        console.warn('Failed to save document reference:', dbError);
+        if (dbError) {
+          console.warn('Failed to save document reference:', dbError);
+        }
       }
 
       return {
