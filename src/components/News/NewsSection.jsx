@@ -83,6 +83,7 @@ const NewsSection = () => {
                 viewport={{ once: true }}
                 transition={{ delay: index * 0.1 }}
                 className="group bg-white rounded-card overflow-hidden shadow-card hover:shadow-card-hover transition-all duration-300 hover:-translate-y-1 cursor-pointer"
+                onClick={() => setSelectedArticle(item)}
               >
                 {/* Image */}
                 <div className="relative h-48 overflow-hidden">
