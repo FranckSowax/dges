@@ -117,29 +117,19 @@ exports.handler = async (event, context) => {
       };
       const mimeType = mimeTypes[extension] || 'text/plain';
 
-      // Step 1: Upload file to Gemini Files API first
-      const uploadedFile = await ai.files.upload({
-        file: {
-          mimeType: mimeType,
-          data: buffer,
-          name: fileName
-        },
-        config: {
-          displayName: fileName
-        }
-      });
+      // Upload directly to File Search Store
+      console.log('Uploading to Gemini File Search Store:', fileSearchStoreName);
+      console.log('File:', fileName, 'MimeType:', mimeType, 'Size:', buffer.length);
 
-      console.log('File uploaded to Gemini:', uploadedFile.name);
+      // Create a Blob-like object for the SDK
+      const fileBlob = new Blob([buffer], { type: mimeType });
 
-      // Step 2: Import the file into the File Search Store
-      let operation = await ai.fileSearchStores.importFile({
+      let operation = await ai.fileSearchStores.uploadToFileSearchStore({
         fileSearchStoreName: fileSearchStoreName,
-        fileName: uploadedFile.name,
+        file: fileBlob,
         config: {
-          chunkingConfig: {
-            chunkSize: 500,
-            chunkOverlap: 50
-          }
+          displayName: fileName,
+          mimeType: mimeType
         }
       });
 
@@ -159,7 +149,7 @@ exports.handler = async (event, context) => {
           body: JSON.stringify({
             success: true,
             status: 'processing',
-            geminiFileName: uploadedFile.name,
+            geminiFileName: operation.name,
             message: 'Fichier en cours de traitement par Gemini. Cela peut prendre quelques minutes.'
           })
         };
@@ -169,6 +159,10 @@ exports.handler = async (event, context) => {
         throw new Error(`Gemini processing error: ${operation.error.message}`);
       }
 
+      // Get the document name from the operation response
+      const geminiDocName = operation.response?.name || operation.name || null;
+      console.log('Gemini document name:', geminiDocName);
+
       // Save document reference to Supabase for tracking
       if (supabase) {
         const { error: dbError } = await supabase
@@ -177,7 +171,7 @@ exports.handler = async (event, context) => {
             title: fileName,
             category: 'Gemini RAG',
             file_url: fileUrl,
-            gemini_document_name: uploadedFile.name
+            gemini_document_name: geminiDocName
           });
 
         if (dbError) {
