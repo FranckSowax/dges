@@ -8,50 +8,42 @@ import {
 const services = [
   {
     id: 1,
-    title: 'Demande de Bourse',
-    description: 'Démarrez votre demande de bourse en ligne en quelques minutes',
-    icon: GraduationCap,
-    color: 'green',
-    href: '/bourses/demande'
-  },
-  {
-    id: 2,
     title: 'Homologation de Diplômes',
     description: 'Faites reconnaître vos diplômes étrangers',
     icon: FileCheck,
-    color: 'blue',
+    color: 'green',
     href: '/diplomes/homologation'
   },
   {
-    id: 3,
+    id: 2,
     title: 'Orientation Scolaire',
     description: 'Trouvez la formation qui correspond à votre profil',
     icon: Compass,
-    color: 'yellow',
+    color: 'blue',
     href: '/orientation'
   },
   {
-    id: 4,
+    id: 3,
     title: 'Documentation',
     description: 'Téléchargez les formulaires et documents officiels',
     icon: FileText,
-    color: 'green',
+    color: 'yellow',
     href: '/documentation'
   },
   {
-    id: 5,
+    id: 4,
     title: 'Calendrier Universitaire',
     description: 'Restez informé des dates importantes',
     icon: Calendar,
-    color: 'blue',
+    color: 'green',
     href: '/calendrier'
   },
   {
-    id: 6,
+    id: 5,
     title: 'Espace Établissements',
     description: 'Accès aux services pour les établissements partenaires',
     icon: Building2,
-    color: 'yellow',
+    color: 'blue',
     href: '/etablissements/espace'
   }
 ];
