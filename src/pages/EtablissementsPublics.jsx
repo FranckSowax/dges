@@ -2,14 +2,16 @@ import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   Search, MapPin, Phone, Mail, Globe, GraduationCap,
-  Building2, School, Landmark, X, ExternalLink, ChevronRight, Loader
+  Building2, School, Landmark, X, ExternalLink, Loader, Edit
 } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import Header from '../components/Navigation/Header';
 import Footer from '../components/Footer/Footer';
 import ChatbotWidget from '../components/Chatbot/ChatbotWidget';
 import { supabase } from '../supabaseClient';
 
 const EtablissementsPublics = () => {
+  const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState('universites');
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedEstablishment, setSelectedEstablishment] = useState(null);
@@ -146,7 +148,18 @@ const EtablissementsPublics = () => {
     total: Object.values(etablissementsData).flat().length
   };
 
-  // Card Component
+  // Dashboard path based on active tab
+  const getDashboardPath = () => {
+    const paths = {
+      universites: '/dashboard/etablissements-publics/universites',
+      instituts: '/dashboard/etablissements-publics/instituts',
+      grandesEcoles: '/dashboard/etablissements-publics/grandes-ecoles',
+      centresUniversitaires: '/dashboard/etablissements-publics/centres-universitaires'
+    };
+    return paths[activeTab];
+  };
+
+  // Card Component - Same style as EstablishmentsList
   const EstablishmentCard = ({ establishment }) => (
     <motion.div
       initial={{ opacity: 0, y: 30 }}
@@ -154,60 +167,87 @@ const EtablissementsPublics = () => {
       viewport={{ once: true }}
       transition={{ duration: 0.5 }}
       onClick={() => setSelectedEstablishment(establishment)}
-      className="bg-white rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 overflow-hidden group hover:-translate-y-2 cursor-pointer"
+      className="bg-white rounded-3xl overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-500 group hover:-translate-y-3 cursor-pointer"
     >
-      {/* Card Header */}
-      <div className={`bg-gradient-to-br ${getBgGradient()} p-6 text-center relative`}>
-        <div className="absolute top-0 left-0 right-0 h-1 bg-white/30" />
-        
-        <div className="w-24 h-24 mx-auto mb-4 rounded-full bg-white shadow-lg flex items-center justify-center border-4 border-white/50">
-          {establishment.logo_url ? (
-            <img src={establishment.logo_url} alt={establishment.name} className="w-full h-full object-cover rounded-full" />
-          ) : (
-            <span className={`text-3xl font-bold ${getAccentColor()}`}>
-              {establishment.acronym.substring(0, 2)}
+      {/* Image/Logo */}
+      <div className="relative w-[calc(100%-32px)] mx-auto mt-4 pt-[60%] rounded-2xl overflow-hidden bg-gradient-to-br from-gabon-green/10 to-gabon-blue/10">
+        {establishment.logo_url ? (
+          <img 
+            src={establishment.logo_url} 
+            alt={establishment.name}
+            className="absolute inset-0 w-full h-full object-contain p-4"
+          />
+        ) : (
+          <div className="absolute inset-0 flex items-center justify-center">
+            <span className={`text-6xl font-bold ${getAccentColor()} opacity-20`}>
+              {establishment.acronym?.substring(0, 3) || establishment.name.substring(0, 3)}
             </span>
-          )}
-        </div>
-        
-        <h3 className="text-lg font-bold text-white mb-1 line-clamp-2">{establishment.name}</h3>
-        <p className="text-white/80 font-semibold">{establishment.acronym}</p>
-      </div>
-
-      {/* Card Body */}
-      <div className="p-6">
-        {establishment.director && (
-          <div className="mb-4 text-center pb-4 border-b border-neutral-gray-light">
-            <p className="font-semibold text-neutral-black">{establishment.director}</p>
-            <p className={`text-sm font-medium ${getAccentColor()}`}>{establishment.director_title}</p>
           </div>
         )}
+        
+        {/* Badge */}
+        <div className="absolute top-4 right-4 bg-white/95 backdrop-blur-sm px-3 py-1.5 rounded-full shadow-lg">
+          <span className={`text-xs font-bold ${getAccentColor()} uppercase tracking-wide`}>
+            {tabs.find(t => t.id === activeTab)?.label.slice(0, -1) || 'Public'}
+          </span>
+        </div>
 
-        <div className="space-y-2">
+        {/* Edit Button */}
+        <button
+          onClick={(e) => {
+            e.stopPropagation();
+            navigate(getDashboardPath());
+          }}
+          className={`absolute bottom-4 right-4 w-10 h-10 bg-white rounded-full flex items-center justify-center shadow-lg opacity-0 group-hover:opacity-100 transition-all duration-300 hover:scale-110 hover:bg-gradient-to-r ${getBgGradient()} hover:text-white`}
+        >
+          <Edit className="w-4 h-4" />
+        </button>
+      </div>
+
+      {/* Content */}
+      <div className="p-6">
+        <h3 className="text-xl font-bold text-neutral-black mb-1 line-clamp-2 leading-tight">
+          {establishment.name}
+        </h3>
+        <p className={`${getAccentColor()} font-semibold mb-3`}>
+          {establishment.acronym}
+        </p>
+
+        {establishment.description && (
+          <p className="text-neutral-gray-dark text-sm mb-4 line-clamp-2">
+            {establishment.description}
+          </p>
+        )}
+
+        {/* Info */}
+        <div className="flex flex-wrap items-center gap-4 text-sm text-neutral-gray-dark">
           {establishment.address && (
-            <div className="flex items-center gap-2 text-sm text-neutral-gray-dark">
-              <MapPin className={`w-4 h-4 ${getAccentColor()} flex-shrink-0`} />
-              <span>{establishment.address}</span>
+            <div className="flex items-center gap-1">
+              <MapPin className="w-4 h-4" />
+              <span>{establishment.address.split(',')[0]}</span>
             </div>
           )}
-          {establishment.phone && (
-            <div className="flex items-center gap-2 text-sm text-neutral-gray-dark">
-              <Phone className={`w-4 h-4 ${getAccentColor()} flex-shrink-0`} />
-              <span>{establishment.phone}</span>
-            </div>
-          )}
-          {establishment.email && (
-            <div className="flex items-center gap-2 text-sm text-neutral-gray-dark">
-              <Mail className={`w-4 h-4 ${getAccentColor()} flex-shrink-0`} />
-              <span className="truncate">{establishment.email}</span>
+          {establishment.director && (
+            <div className="flex items-center gap-1">
+              <GraduationCap className="w-4 h-4" />
+              <span className="truncate max-w-[150px]">{establishment.director}</span>
             </div>
           )}
         </div>
 
-        <button className={`mt-4 w-full py-3 px-4 bg-neutral-black text-white rounded-xl font-medium flex items-center justify-center gap-2 hover:opacity-90 transition-all duration-300 text-sm group-hover:bg-gradient-to-r ${getBgGradient()}`}>
-          Voir les détails
-          <ChevronRight className="w-4 h-4" />
-        </button>
+        {/* Website Button */}
+        {establishment.website_url && (
+          <a
+            href={establishment.website_url}
+            target="_blank"
+            rel="noopener noreferrer"
+            onClick={(e) => e.stopPropagation()}
+            className={`mt-4 w-full py-3 px-4 bg-neutral-black text-white rounded-xl font-medium flex items-center justify-center gap-2 hover:bg-gradient-to-r ${getBgGradient()} transition-all duration-300 text-sm`}
+          >
+            Visiter le site
+            <ExternalLink className="w-4 h-4" />
+          </a>
+        )}
       </div>
     </motion.div>
   );
@@ -230,7 +270,14 @@ const EtablissementsPublics = () => {
         className="relative bg-white w-full max-w-2xl max-h-[90vh] rounded-3xl shadow-2xl overflow-hidden"
       >
         {/* Header */}
-        <div className={`relative h-48 bg-gradient-to-br ${getBgGradient()}`}>
+        <div className="relative h-48 bg-gradient-to-br from-gabon-green to-gabon-blue">
+          {establishment.logo_url && (
+            <img 
+              src={establishment.logo_url} 
+              alt={establishment.name}
+              className="absolute inset-0 w-full h-full object-contain p-8 opacity-30"
+            />
+          )}
           <button
             onClick={onClose}
             className="absolute top-4 right-4 p-2 bg-white/20 hover:bg-white/30 text-white rounded-full backdrop-blur-md transition-colors"
@@ -238,17 +285,11 @@ const EtablissementsPublics = () => {
             <X className="w-6 h-6" />
           </button>
           <div className="absolute bottom-0 left-0 right-0 p-6 text-white">
-            <div className="flex items-center gap-4">
-              <div className="w-16 h-16 rounded-full bg-white flex items-center justify-center">
-                <span className={`text-2xl font-bold ${getAccentColor()}`}>
-                  {establishment.acronym.substring(0, 2)}
-                </span>
-              </div>
-              <div>
-                <h2 className="text-2xl font-bold">{establishment.name}</h2>
-                <p className="text-white/80 font-medium">{establishment.acronym}</p>
-              </div>
-            </div>
+            <span className="inline-block px-3 py-1 bg-white/20 backdrop-blur-sm text-xs font-bold rounded-full mb-2">
+              {tabs.find(t => t.id === activeTab)?.label.slice(0, -1) || 'Public'}
+            </span>
+            <h2 className="text-2xl font-bold">{establishment.name}</h2>
+            <p className="text-white/80 font-medium">{establishment.acronym}</p>
           </div>
         </div>
 
@@ -263,9 +304,9 @@ const EtablissementsPublics = () => {
 
           {establishment.director && (
             <div className="mb-4 flex items-center gap-3">
-              <GraduationCap className={`w-5 h-5 ${getAccentColor()}`} />
+              <GraduationCap className="w-5 h-5 text-gabon-green" />
               <div>
-                <p className="text-sm text-neutral-gray-dark">{establishment.director_title}</p>
+                <p className="text-sm text-neutral-gray-dark">Directeur / Responsable</p>
                 <p className="font-medium text-neutral-black">{establishment.director}</p>
               </div>
             </div>
@@ -273,7 +314,7 @@ const EtablissementsPublics = () => {
 
           {establishment.address && (
             <div className="mb-4 flex items-center gap-3">
-              <MapPin className={`w-5 h-5 ${getAccentColor()}`} />
+              <MapPin className="w-5 h-5 text-gabon-green" />
               <div>
                 <p className="text-sm text-neutral-gray-dark">Adresse</p>
                 <p className="font-medium text-neutral-black">{establishment.address}</p>
@@ -283,7 +324,7 @@ const EtablissementsPublics = () => {
 
           {establishment.phone && (
             <div className="mb-4 flex items-center gap-3">
-              <Phone className={`w-5 h-5 ${getAccentColor()}`} />
+              <Phone className="w-5 h-5 text-gabon-green" />
               <div>
                 <p className="text-sm text-neutral-gray-dark">Téléphone</p>
                 <p className="font-medium text-neutral-black">{establishment.phone}</p>
@@ -293,10 +334,10 @@ const EtablissementsPublics = () => {
 
           {establishment.email && (
             <div className="mb-4 flex items-center gap-3">
-              <Mail className={`w-5 h-5 ${getAccentColor()}`} />
+              <Mail className="w-5 h-5 text-gabon-green" />
               <div>
                 <p className="text-sm text-neutral-gray-dark">Email</p>
-                <a href={`mailto:${establishment.email}`} className={`font-medium ${getAccentColor()} hover:underline`}>
+                <a href={`mailto:${establishment.email}`} className="font-medium text-gabon-green hover:underline">
                   {establishment.email}
                 </a>
               </div>
@@ -308,7 +349,7 @@ const EtablissementsPublics = () => {
               href={establishment.website_url}
               target="_blank"
               rel="noopener noreferrer"
-              className={`w-full py-3 px-6 bg-gradient-to-r ${getBgGradient()} text-white rounded-xl font-medium flex items-center justify-center gap-2 hover:opacity-90 transition-all duration-300`}
+              className="w-full py-3 px-6 bg-gabon-green text-white rounded-xl font-medium flex items-center justify-center gap-2 hover:bg-gabon-green-dark transition-all duration-300"
             >
               <Globe className="w-5 h-5" />
               Visiter le site web
