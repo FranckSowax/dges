@@ -32,14 +32,14 @@ const Footer = () => {
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 sm:gap-10 lg:gap-12">
           {/* Brand */}
           <div>
-            <div className="flex items-center space-x-3 mb-4 sm:mb-6">
-              <div className="w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-br from-gabon-green to-gabon-blue rounded-lg flex items-center justify-center">
-                <span className="text-white font-bold text-lg sm:text-xl">DG</span>
-              </div>
-              <div>
-                <h3 className="text-base sm:text-lg font-bold leading-tight">DGES</h3>
-                <p className="text-xs sm:text-sm text-white/60">Gabon</p>
-              </div>
+            <div className="mb-4 sm:mb-6">
+              <a href="/" className="inline-block">
+                <img 
+                  src="/LOGO-DGES-2-1.png" 
+                  alt="Logo DGES Gabon" 
+                  className="h-16 sm:h-20 w-auto object-contain brightness-0 invert"
+                />
+              </a>
             </div>
             <p className="text-sm sm:text-base text-white/80 mb-4 sm:mb-6 leading-relaxed">
               Direction Générale de l'Enseignement Supérieur - 
