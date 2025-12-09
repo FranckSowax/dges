@@ -6,7 +6,7 @@ import { useChat } from '../../context/ChatContext';
 const ChatBot = () => {
   const { isOpen, toggleChat, consumeInitialMessage, initialMessage } = useChat();
   const [messages, setMessages] = useState([
-    { id: 1, type: 'bot', content: 'Bonjour ! Je suis l\'assistant virtuel de la DGES, propulsé par Gemini AI. Comment puis-je vous aider aujourd\'hui ?' }
+    { id: 1, type: 'bot', content: 'Bonjour ! Je suis l\'assistant virtuel de la DGES. Comment puis-je vous aider aujourd\'hui ?' }
   ]);
   const [inputValue, setInputValue] = useState('');
   const [isLoading, setIsLoading] = useState(false);
