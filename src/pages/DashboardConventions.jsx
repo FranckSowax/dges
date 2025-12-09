@@ -26,12 +26,6 @@ const DashboardConventions = () => {
     file_type: ''
   });
 
-  // Mock data fallback (IDs are for display only, not for DB operations)
-  const mockAgreements = [
-    { id: 'mock-1', title: "Convention de collaboration entre l'Université de Dschang et l'USTM", category: "Convention", partner_country: "Cameroun", partner_institution: "Université de Dschang", signing_date: "2024-03-15", file_size: "2.5 MB", isMock: true },
-    { id: 'mock-2', title: "Accord de coopération UOB - Université de Ngaoundéré", category: "Accord Université", partner_country: "Cameroun", partner_institution: "Université de Ngaoundéré", signing_date: "2023-06-10", file_size: "1.8 MB", isMock: true },
-    { id: 'mock-3', title: "Accord-cadre ENSET - Université Cheikh Anta Diop", category: "Accord Institut", partner_country: "Sénégal", partner_institution: "UCAD Dakar", signing_date: "2023-09-20", file_size: "2.1 MB", isMock: true }
-  ];
 
   useEffect(() => {
     fetchAgreements();
@@ -46,10 +40,10 @@ const DashboardConventions = () => {
         .order('created_at', { ascending: false });
 
       if (error) throw error;
-      setAgreements(data && data.length > 0 ? data : mockAgreements);
+      setAgreements(data || []);
     } catch (error) {
-      console.warn('Supabase fetch error (using mock data):', error.message);
-      setAgreements(mockAgreements);
+      console.warn('Supabase fetch error:', error.message);
+      setAgreements([]);
     } finally {
       setLoading(false);
     }
@@ -165,11 +159,6 @@ const DashboardConventions = () => {
   };
 
   const handleEdit = (agreement) => {
-    // Don't allow editing mock data - create new instead
-    if (agreement.isMock) {
-      alert('Les données de démonstration ne peuvent pas être modifiées. Créez un nouvel accord.');
-      return;
-    }
     setFormData({
       title: agreement.title,
       category: agreement.category,
@@ -203,12 +192,7 @@ const DashboardConventions = () => {
     });
   };
 
-  const handleDelete = async (id, isMock) => {
-    // Don't allow deleting mock data
-    if (isMock) {
-      alert('Les données de démonstration ne peuvent pas être supprimées.');
-      return;
-    }
+  const handleDelete = async (id) => {
     if (window.confirm('Supprimer cet accord ?')) {
       try {
         const { error } = await supabase.from('cooperation_agreements').delete().eq('id', id);
@@ -366,7 +350,7 @@ const DashboardConventions = () => {
                   </button>
                 </div>
                 <button 
-                  onClick={() => handleDelete(agreement.id, agreement.isMock)}
+                  onClick={() => handleDelete(agreement.id)}
                   className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
                   title="Supprimer"
                 >

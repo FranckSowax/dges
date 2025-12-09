@@ -13,17 +13,6 @@ const ConventionsCooperation = () => {
   const [loading, setLoading] = useState(true);
   const [previewDoc, setPreviewDoc] = useState(null);
 
-  // Mock data fallback
-  const mockAgreements = [
-    { id: 'mock-1', title: "Convention de collaboration entre l'Université de Dschang et l'USTM", category: "Convention", partner_country: "Cameroun", partner_institution: "Université de Dschang", signing_date: "2024-03-15", file_size: "2.5 MB" },
-    { id: 'mock-2', title: "Convention de coopération dans le domaine de la formation professionnelle", category: "Convention", partner_country: "France", partner_institution: "Ministère de l'Éducation", signing_date: "2024-01-20", file_size: "1.8 MB" },
-    { id: 'mock-3', title: "Convention de coopération ENSET - Université de Douala", category: "Convention", partner_country: "Cameroun", partner_institution: "Université de Douala", signing_date: "2023-09-10", file_size: "2.1 MB" },
-    { id: 'mock-4', title: "Convention de partenariat INSG - Petro Gabon", category: "Convention", partner_country: "Gabon", partner_institution: "Petro Gabon", signing_date: "2024-02-15", file_size: "1.9 MB" },
-    { id: 'mock-5', title: "Convention portant création de l'EAMAU", category: "Convention", partner_country: "Multi-pays", partner_institution: "EAMAU", signing_date: "2022-06-01", file_size: "4.5 MB" },
-    { id: 'mock-6', title: "Accord de coopération UOB - Université de Ngaoundéré", category: "Accord Université", partner_country: "Cameroun", partner_institution: "Université de Ngaoundéré", signing_date: "2023-05-20", file_size: "1.6 MB" },
-    { id: 'mock-7', title: "Accord-cadre UOB - Université d'Abomey-Calavi", category: "Accord Université", partner_country: "Bénin", partner_institution: "Université d'Abomey-Calavi", signing_date: "2024-01-10", file_size: "2.0 MB" },
-    { id: 'mock-8', title: "Accord-cadre ENSET - Université Cheikh Anta Diop", category: "Accord Institut", partner_country: "Sénégal", partner_institution: "UCAD Dakar", signing_date: "2023-09-20", file_size: "1.8 MB" }
-  ];
 
   useEffect(() => {
     window.scrollTo(0, 0);
@@ -39,10 +28,10 @@ const ConventionsCooperation = () => {
         .order('signing_date', { ascending: false });
 
       if (error) throw error;
-      setAgreements(data && data.length > 0 ? data : mockAgreements);
+      setAgreements(data || []);
     } catch (error) {
-      console.warn('Supabase fetch error (using mock data):', error.message);
-      setAgreements(mockAgreements);
+      console.warn('Supabase fetch error:', error.message);
+      setAgreements([]);
     } finally {
       setLoading(false);
     }
