@@ -1,27 +1,25 @@
 import React from 'react';
+import { Link } from 'react-router-dom';
 import { Facebook, Twitter, Linkedin, Mail, Phone, MapPin } from 'lucide-react';
 
 const Footer = () => {
   const currentYear = new Date().getFullYear();
 
   const footerLinks = {
-    services: [
-      { label: 'Bourses', href: '/bourses' },
-      { label: 'Orientation', href: '/orientation' },
-      { label: 'Homologation', href: '/homologation' },
-      { label: 'Documentation', href: '/documentation' }
+    dges: [
+      { label: 'Organigramme', href: '/dges/organigramme' },
+      { label: 'Annuaire des Responsables', href: '/dges/responsables' },
+      { label: 'Attribution & Organisation', href: '/dges/organisation' },
+      { label: 'Actualités', href: '/actualites' }
     ],
-    about: [
-      { label: 'Présentation', href: '/presentation' },
-      { label: 'Organisation', href: '/organisation' },
-      { label: 'Actualités', href: '/actualites' },
-      { label: 'Contact', href: '/contact' }
+    etablissements: [
+      { label: 'Établissements Publics', href: '/etablissements-publics' },
+      { label: 'Établissements Privés', href: '/etablissements-prives' },
+      { label: 'Établissements RUP', href: '/etablissements-rup' },
+      { label: 'Établissements Inter-État', href: '/etablissements-inter-etat' }
     ],
-    legal: [
-      { label: 'Mentions légales', href: '/mentions-legales' },
-      { label: 'Politique de confidentialité', href: '/confidentialite' },
-      { label: 'Conditions d\'utilisation', href: '/conditions' },
-      { label: 'Accessibilité', href: '/accessibilite' }
+    cooperation: [
+      { label: 'Accords de partenariat', href: '/cooperation/accords' }
     ]
   };
 
@@ -58,31 +56,37 @@ const Footer = () => {
             </div>
           </div>
 
-          {/* Services */}
+          {/* DGES */}
           <div>
-            <h4 className="font-bold text-base sm:text-lg mb-4 sm:mb-6">Services</h4>
+            <h4 className="font-bold text-base sm:text-lg mb-4 sm:mb-6">DGES</h4>
             <ul className="space-y-2 sm:space-y-3">
-              {footerLinks.services.map((link, index) => (
+              {footerLinks.dges.map((link, index) => (
                 <li key={index}>
-                  <a href={link.href} className="text-sm sm:text-base text-white/80 hover:text-gabon-green transition-colors">
+                  <Link to={link.href} className="text-sm sm:text-base text-white/80 hover:text-gabon-green transition-colors">
                     {link.label}
-                  </a>
+                  </Link>
                 </li>
               ))}
             </ul>
           </div>
 
-          {/* À propos */}
+          {/* Établissements */}
           <div>
-            <h4 className="font-bold text-base sm:text-lg mb-4 sm:mb-6">À propos</h4>
+            <h4 className="font-bold text-base sm:text-lg mb-4 sm:mb-6">Établissements</h4>
             <ul className="space-y-2 sm:space-y-3">
-              {footerLinks.about.map((link, index) => (
+              {footerLinks.etablissements.map((link, index) => (
                 <li key={index}>
-                  <a href={link.href} className="text-sm sm:text-base text-white/80 hover:text-gabon-green transition-colors">
+                  <Link to={link.href} className="text-sm sm:text-base text-white/80 hover:text-gabon-green transition-colors">
                     {link.label}
-                  </a>
+                  </Link>
                 </li>
               ))}
+              {/* Coopération */}
+              <li className="pt-2 mt-2 border-t border-white/10">
+                <Link to="/cooperation/accords" className="text-sm sm:text-base text-white/80 hover:text-gabon-green transition-colors">
+                  Coopération Internationale
+                </Link>
+              </li>
             </ul>
           </div>
 
