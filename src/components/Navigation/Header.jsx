@@ -9,6 +9,7 @@ const Header = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [activeMenu, setActiveMenu] = useState(null);
   const [isMoreMenuOpen, setIsMoreMenuOpen] = useState(false);
+  const [expandedMobileMenu, setExpandedMobileMenu] = useState(null);
 
   // Séparer les menus : principaux (3 premiers) et secondaires (le reste)
   const primaryMenus = navigationData.slice(0, 3); // DGES, Etablissements, Recherche
@@ -136,19 +137,60 @@ const Header = () => {
           </div>
         </div>
 
-        {/* Mobile Menu - Improved */}
+        {/* Mobile Menu - Accordion Style */}
         {isMobileMenuOpen && (
           <div className="lg:hidden mt-4 pb-4 border-t border-neutral-gray-light pt-4 max-h-[70vh] overflow-y-auto">
             <nav className="flex flex-col space-y-1">
               {navigationData.map((item) => (
-                <Link
-                  key={item.id}
-                  to={item.href || '#'}
-                  onClick={() => setIsMobileMenuOpen(false)}
-                  className="px-4 py-3 rounded-lg text-sm text-neutral-gray-dark hover:bg-gabon-green-light hover:text-gabon-green transition-colors font-medium active:scale-95"
-                >
-                  {item.label}
-                </Link>
+                <div key={item.id}>
+                  {/* Si l'item a un megaMenu, afficher un accordéon */}
+                  {item.megaMenu ? (
+                    <>
+                      <button
+                        onClick={() => setExpandedMobileMenu(expandedMobileMenu === item.id ? null : item.id)}
+                        className="w-full px-4 py-3 rounded-lg text-sm text-neutral-gray-dark hover:bg-gabon-green-light hover:text-gabon-green transition-colors font-medium flex items-center justify-between"
+                      >
+                        <span>{item.label}</span>
+                        <ChevronDown className={`w-4 h-4 transition-transform ${expandedMobileMenu === item.id ? 'rotate-180' : ''}`} />
+                      </button>
+                      
+                      {/* Sous-menu accordéon */}
+                      {expandedMobileMenu === item.id && (
+                        <div className="ml-4 mt-1 mb-2 border-l-2 border-gabon-green-light pl-3 space-y-1">
+                          {item.megaMenu.sections.map((section, sIdx) => (
+                            <div key={sIdx}>
+                              <p className="text-xs font-semibold text-neutral-gray-dark uppercase tracking-wide px-3 py-2">
+                                {section.title}
+                              </p>
+                              {section.items.map((subItem, subIdx) => (
+                                <Link
+                                  key={subIdx}
+                                  to={subItem.href}
+                                  onClick={() => {
+                                    setIsMobileMenuOpen(false);
+                                    setExpandedMobileMenu(null);
+                                  }}
+                                  className="block px-3 py-2 rounded-lg text-sm text-neutral-black hover:bg-gabon-green-light hover:text-gabon-green transition-colors"
+                                >
+                                  {subItem.label}
+                                </Link>
+                              ))}
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </>
+                  ) : (
+                    /* Si l'item a un href direct */
+                    <Link
+                      to={item.href}
+                      onClick={() => setIsMobileMenuOpen(false)}
+                      className="block px-4 py-3 rounded-lg text-sm text-neutral-gray-dark hover:bg-gabon-green-light hover:text-gabon-green transition-colors font-medium"
+                    >
+                      {item.label}
+                    </Link>
+                  )}
+                </div>
               ))}
               <div className="pt-3 border-t border-neutral-gray-light mt-3 space-y-2">
                 <a
@@ -159,10 +201,6 @@ const Header = () => {
                 >
                   Mon Compte
                 </a>
-                <button className="w-full bg-neutral-gray-light text-neutral-black px-4 py-3 rounded-xl font-medium hover:bg-neutral-gray transition-all duration-200 text-sm flex items-center justify-center gap-2 active:scale-95">
-                  <Search className="w-4 h-4" />
-                  Rechercher
-                </button>
               </div>
             </nav>
           </div>
