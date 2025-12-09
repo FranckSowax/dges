@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { motion } from 'framer-motion';
-import { Search, FileText, Calendar, Download, Eye, GraduationCap, Building2, Globe, Loader } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Search, FileText, Calendar, Download, Eye, GraduationCap, Building2, Globe, Loader, X } from 'lucide-react';
 import Header from '../components/Navigation/Header';
 import Footer from '../components/Footer/Footer';
 import ChatbotWidget from '../components/Chatbot/ChatbotWidget';
@@ -11,6 +11,7 @@ const ConventionsCooperation = () => {
   const [activeFilter, setActiveFilter] = useState('all');
   const [agreements, setAgreements] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [previewDoc, setPreviewDoc] = useState(null);
 
   // Mock data fallback
   const mockAgreements = [
@@ -68,9 +69,21 @@ const ConventionsCooperation = () => {
     return filteredAgreements.filter(agreement => getCategoryKey(agreement.category) === categoryKey);
   };
 
+  // Get file icon based on type
+  const getFileIcon = (fileType) => {
+    if (fileType === 'pdf') return '📄';
+    if (['doc', 'docx'].includes(fileType)) return '📝';
+    return '📁';
+  };
+
+  // Check if file can be previewed in browser
+  const canPreviewInBrowser = (fileType) => {
+    return fileType === 'pdf';
+  };
+
   const handleView = (agreement) => {
     if (agreement.file_url) {
-      window.open(agreement.file_url, '_blank');
+      setPreviewDoc(agreement);
     } else {
       alert(`Aucun fichier disponible pour : ${agreement.title}`);
     }
@@ -80,8 +93,11 @@ const ConventionsCooperation = () => {
     if (agreement.file_url) {
       const link = document.createElement('a');
       link.href = agreement.file_url;
-      link.download = `${agreement.title}.pdf`;
+      link.download = agreement.file_name || `${agreement.title}.pdf`;
+      link.target = '_blank';
+      document.body.appendChild(link);
       link.click();
+      document.body.removeChild(link);
     } else {
       alert(`Aucun fichier disponible pour : ${agreement.title}`);
     }
@@ -345,6 +361,107 @@ const ConventionsCooperation = () => {
       </section>
 
       <Footer />
+
+      {/* Document Preview Modal */}
+      <AnimatePresence>
+        {previewDoc && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4"
+            onClick={() => setPreviewDoc(null)}
+          >
+            <motion.div
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.9 }}
+              onClick={(e) => e.stopPropagation()}
+              className="bg-white rounded-2xl w-full max-w-5xl h-[90vh] flex flex-col overflow-hidden shadow-2xl"
+            >
+              {/* Modal Header */}
+              <div className="flex items-center justify-between p-4 border-b bg-gradient-to-r from-gabon-blue to-gabon-blue-dark text-white">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 bg-white/20 rounded-lg flex items-center justify-center">
+                    <span className="text-xl">{getFileIcon(previewDoc.file_type)}</span>
+                  </div>
+                  <div>
+                    <h3 className="font-semibold line-clamp-1">{previewDoc.title}</h3>
+                    <p className="text-sm text-white/70">
+                      {previewDoc.file_name || 'Document'} • {previewDoc.file_size || 'Taille inconnue'}
+                    </p>
+                  </div>
+                </div>
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={() => handleDownload(previewDoc)}
+                    className="p-2 bg-white/20 hover:bg-white/30 rounded-lg transition-colors flex items-center gap-2"
+                  >
+                    <Download className="w-5 h-5" />
+                    <span className="hidden sm:inline">Télécharger</span>
+                  </button>
+                  <a
+                    href={previewDoc.file_url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="p-2 bg-white/20 hover:bg-white/30 rounded-lg transition-colors"
+                    title="Ouvrir dans un nouvel onglet"
+                  >
+                    <Eye className="w-5 h-5" />
+                  </a>
+                  <button
+                    onClick={() => setPreviewDoc(null)}
+                    className="p-2 bg-white/20 hover:bg-red-500 rounded-lg transition-colors"
+                  >
+                    <X className="w-5 h-5" />
+                  </button>
+                </div>
+              </div>
+
+              {/* Preview Content */}
+              <div className="flex-1 bg-neutral-gray-light overflow-hidden">
+                {canPreviewInBrowser(previewDoc.file_type) ? (
+                  <iframe
+                    src={`${previewDoc.file_url}#toolbar=1&navpanes=0`}
+                    className="w-full h-full border-0"
+                    title={previewDoc.title}
+                  />
+                ) : (
+                  <div className="flex flex-col items-center justify-center h-full p-8 text-center">
+                    <div className="w-24 h-24 bg-white rounded-2xl shadow-lg flex items-center justify-center mb-6">
+                      <span className="text-5xl">{getFileIcon(previewDoc.file_type)}</span>
+                    </div>
+                    <h3 className="text-xl font-bold text-neutral-black mb-2">
+                      Aperçu non disponible
+                    </h3>
+                    <p className="text-neutral-gray-dark mb-6 max-w-md">
+                      Les fichiers {previewDoc.file_type?.toUpperCase() || 'de ce type'} ne peuvent pas être prévisualisés directement dans le navigateur.
+                    </p>
+                    <div className="flex gap-3">
+                      <button
+                        onClick={() => handleDownload(previewDoc)}
+                        className="px-6 py-3 bg-gabon-blue text-white rounded-xl font-semibold flex items-center gap-2 hover:bg-blue-700 transition-colors"
+                      >
+                        <Download className="w-5 h-5" />
+                        Télécharger le document
+                      </button>
+                      <a
+                        href={previewDoc.file_url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="px-6 py-3 bg-neutral-black text-white rounded-xl font-semibold flex items-center gap-2 hover:bg-neutral-gray-dark transition-colors"
+                      >
+                        <Eye className="w-5 h-5" />
+                        Ouvrir avec une app
+                      </a>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 };

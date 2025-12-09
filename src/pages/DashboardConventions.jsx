@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { Plus, Search, FileText, Trash2, Eye, Upload, Download, Edit, Globe, Calendar } from 'lucide-react';
+import { Plus, Search, FileText, Trash2, Eye, Upload, Download, Edit, Globe, Calendar, X, FileIcon, File } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
 import DashboardLayout from '../layouts/DashboardLayout';
 import { supabase } from '../supabaseClient';
 
@@ -10,6 +11,7 @@ const DashboardConventions = () => {
   const [showForm, setShowForm] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [editingId, setEditingId] = useState(null);
+  const [previewDoc, setPreviewDoc] = useState(null); // For document preview modal
   
   const [formData, setFormData] = useState({
     title: '',
@@ -19,7 +21,9 @@ const DashboardConventions = () => {
     partner_institution: '',
     signing_date: '',
     file: null,
-    file_url: ''
+    file_url: '',
+    file_name: '',
+    file_type: ''
   });
 
   // Mock data fallback
@@ -52,10 +56,10 @@ const DashboardConventions = () => {
   };
 
   const handleFileUpload = async (file) => {
-    if (!file) return null;
+    if (!file) return { url: null, name: null, type: null };
     
-    const fileExt = file.name.split('.').pop();
-    const fileName = `${Math.random()}.${fileExt}`;
+    const fileExt = file.name.split('.').pop().toLowerCase();
+    const fileName = `${Date.now()}_${file.name.replace(/[^a-zA-Z0-9.-]/g, '_')}`;
     const filePath = `conventions/${fileName}`;
 
     const { error: uploadError } = await supabase.storage
@@ -65,7 +69,47 @@ const DashboardConventions = () => {
     if (uploadError) throw uploadError;
 
     const { data } = supabase.storage.from('documents').getPublicUrl(filePath);
-    return data.publicUrl;
+    return {
+      url: data.publicUrl,
+      name: file.name,
+      type: fileExt
+    };
+  };
+
+  // Get file icon based on type
+  const getFileIcon = (fileType) => {
+    if (fileType === 'pdf') return '📄';
+    if (['doc', 'docx'].includes(fileType)) return '📝';
+    return '📁';
+  };
+
+  // Check if file can be previewed in browser
+  const canPreviewInBrowser = (fileType) => {
+    return fileType === 'pdf';
+  };
+
+  // Handle document preview
+  const handlePreview = (agreement) => {
+    if (agreement.file_url) {
+      setPreviewDoc(agreement);
+    } else {
+      alert('Aucun fichier disponible pour cet accord.');
+    }
+  };
+
+  // Handle document download
+  const handleDownload = (agreement) => {
+    if (agreement.file_url) {
+      const link = document.createElement('a');
+      link.href = agreement.file_url;
+      link.download = agreement.file_name || `${agreement.title}.pdf`;
+      link.target = '_blank';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    } else {
+      alert('Aucun fichier disponible pour cet accord.');
+    }
   };
 
   const handleSubmit = async (e) => {
@@ -73,10 +117,10 @@ const DashboardConventions = () => {
     setUploading(true);
 
     try {
-      let fileUrl = formData.file_url;
+      let fileData = { url: formData.file_url, name: formData.file_name, type: formData.file_type };
 
       if (formData.file) {
-        fileUrl = await handleFileUpload(formData.file);
+        fileData = await handleFileUpload(formData.file);
       }
 
       const agreementData = {
@@ -86,7 +130,9 @@ const DashboardConventions = () => {
         partner_country: formData.partner_country,
         partner_institution: formData.partner_institution,
         signing_date: formData.signing_date || null,
-        file_url: fileUrl,
+        file_url: fileData.url || formData.file_url,
+        file_name: fileData.name || formData.file_name,
+        file_type: fileData.type || formData.file_type,
         file_size: formData.file ? `${(formData.file.size / 1024 / 1024).toFixed(2)} MB` : null
       };
 
@@ -127,7 +173,9 @@ const DashboardConventions = () => {
       partner_institution: agreement.partner_institution || '',
       signing_date: agreement.signing_date || '',
       file: null,
-      file_url: agreement.file_url || ''
+      file_url: agreement.file_url || '',
+      file_name: agreement.file_name || '',
+      file_type: agreement.file_type || ''
     });
     setEditingId(agreement.id);
     setShowForm(true);
@@ -144,7 +192,9 @@ const DashboardConventions = () => {
       partner_institution: '',
       signing_date: '',
       file: null,
-      file_url: ''
+      file_url: '',
+      file_name: '',
+      file_type: ''
     });
   };
 
@@ -280,18 +330,27 @@ const DashboardConventions = () => {
               <div className="px-5 py-3 bg-neutral-background border-t border-neutral-gray-light flex justify-between">
                 <div className="flex gap-2">
                   {agreement.file_url && (
-                    <a 
-                      href={agreement.file_url} 
-                      target="_blank" 
-                      rel="noopener noreferrer"
-                      className="p-2 text-gabon-blue hover:bg-blue-50 rounded-lg transition-colors"
-                    >
-                      <Download className="w-4 h-4" />
-                    </a>
+                    <>
+                      <button 
+                        onClick={() => handlePreview(agreement)}
+                        className="p-2 text-gabon-blue hover:bg-blue-50 rounded-lg transition-colors"
+                        title="Aperçu"
+                      >
+                        <Eye className="w-4 h-4" />
+                      </button>
+                      <button 
+                        onClick={() => handleDownload(agreement)}
+                        className="p-2 text-green-600 hover:bg-green-50 rounded-lg transition-colors"
+                        title="Télécharger"
+                      >
+                        <Download className="w-4 h-4" />
+                      </button>
+                    </>
                   )}
                   <button 
                     onClick={() => handleEdit(agreement)}
                     className="p-2 text-amber-600 hover:bg-amber-50 rounded-lg transition-colors"
+                    title="Modifier"
                   >
                     <Edit className="w-4 h-4" />
                   </button>
@@ -299,6 +358,7 @@ const DashboardConventions = () => {
                 <button 
                   onClick={() => handleDelete(agreement.id)}
                   className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                  title="Supprimer"
                 >
                   <Trash2 className="w-4 h-4" />
                 </button>
@@ -386,15 +446,15 @@ const DashboardConventions = () => {
               </div>
 
               <div>
-                <label className="block text-sm font-medium mb-2">Document PDF</label>
+                <label className="block text-sm font-medium mb-2">Document (PDF ou DOCX)</label>
                 <input
                   type="file"
-                  accept=".pdf"
+                  accept=".pdf,.doc,.docx"
                   className="w-full p-3 border rounded-xl"
                   onChange={e => setFormData({...formData, file: e.target.files[0]})}
                 />
                 {formData.file_url && !formData.file && (
-                  <p className="text-xs text-green-600 mt-1">✓ Un fichier est déjà associé</p>
+                  <p className="text-xs text-green-600 mt-1">✓ Un fichier est déjà associé ({formData.file_name || 'document'})</p>
                 )}
               </div>
 
@@ -418,6 +478,107 @@ const DashboardConventions = () => {
           </div>
         </div>
       )}
+
+      {/* Document Preview Modal */}
+      <AnimatePresence>
+        {previewDoc && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4"
+            onClick={() => setPreviewDoc(null)}
+          >
+            <motion.div
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.9 }}
+              onClick={(e) => e.stopPropagation()}
+              className="bg-white rounded-2xl w-full max-w-5xl h-[90vh] flex flex-col overflow-hidden shadow-2xl"
+            >
+              {/* Modal Header */}
+              <div className="flex items-center justify-between p-4 border-b bg-gradient-to-r from-gabon-blue to-gabon-blue-dark text-white">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 bg-white/20 rounded-lg flex items-center justify-center">
+                    <span className="text-xl">{getFileIcon(previewDoc.file_type)}</span>
+                  </div>
+                  <div>
+                    <h3 className="font-semibold line-clamp-1">{previewDoc.title}</h3>
+                    <p className="text-sm text-white/70">
+                      {previewDoc.file_name || 'Document'} • {previewDoc.file_size || 'Taille inconnue'}
+                    </p>
+                  </div>
+                </div>
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={() => handleDownload(previewDoc)}
+                    className="p-2 bg-white/20 hover:bg-white/30 rounded-lg transition-colors flex items-center gap-2"
+                  >
+                    <Download className="w-5 h-5" />
+                    <span className="hidden sm:inline">Télécharger</span>
+                  </button>
+                  <a
+                    href={previewDoc.file_url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="p-2 bg-white/20 hover:bg-white/30 rounded-lg transition-colors"
+                    title="Ouvrir dans un nouvel onglet"
+                  >
+                    <Eye className="w-5 h-5" />
+                  </a>
+                  <button
+                    onClick={() => setPreviewDoc(null)}
+                    className="p-2 bg-white/20 hover:bg-red-500 rounded-lg transition-colors"
+                  >
+                    <X className="w-5 h-5" />
+                  </button>
+                </div>
+              </div>
+
+              {/* Preview Content */}
+              <div className="flex-1 bg-neutral-gray-light overflow-hidden">
+                {canPreviewInBrowser(previewDoc.file_type) ? (
+                  <iframe
+                    src={`${previewDoc.file_url}#toolbar=1&navpanes=0`}
+                    className="w-full h-full border-0"
+                    title={previewDoc.title}
+                  />
+                ) : (
+                  <div className="flex flex-col items-center justify-center h-full p-8 text-center">
+                    <div className="w-24 h-24 bg-white rounded-2xl shadow-lg flex items-center justify-center mb-6">
+                      <span className="text-5xl">{getFileIcon(previewDoc.file_type)}</span>
+                    </div>
+                    <h3 className="text-xl font-bold text-neutral-black mb-2">
+                      Aperçu non disponible
+                    </h3>
+                    <p className="text-neutral-gray-dark mb-6 max-w-md">
+                      Les fichiers {previewDoc.file_type?.toUpperCase() || 'de ce type'} ne peuvent pas être prévisualisés directement dans le navigateur.
+                    </p>
+                    <div className="flex gap-3">
+                      <button
+                        onClick={() => handleDownload(previewDoc)}
+                        className="px-6 py-3 bg-gabon-blue text-white rounded-xl font-semibold flex items-center gap-2 hover:bg-blue-700 transition-colors"
+                      >
+                        <Download className="w-5 h-5" />
+                        Télécharger le document
+                      </button>
+                      <a
+                        href={previewDoc.file_url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="px-6 py-3 bg-neutral-black text-white rounded-xl font-semibold flex items-center gap-2 hover:bg-neutral-gray-dark transition-colors"
+                      >
+                        <Eye className="w-5 h-5" />
+                        Ouvrir avec une app
+                      </a>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </DashboardLayout>
   );
 };
