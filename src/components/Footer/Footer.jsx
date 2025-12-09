@@ -35,7 +35,7 @@ const Footer = () => {
             <div className="mb-4 sm:mb-6">
               <a href="/" className="inline-block">
                 <img 
-                  src="/LOGO-DGES-2-1.png" 
+                  src="/LOGO-DGES-WHT--2.png" 
                   alt="Logo DGES Gabon" 
                   className="h-16 sm:h-20 w-auto object-contain"
                 />
