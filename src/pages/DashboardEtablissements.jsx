@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Plus, Search, Edit2, Trash2, Building2, Globe, Bookmark } from 'lucide-react';
+import { Plus, Search, Edit2, Trash2, Building2, Globe, Bookmark, GraduationCap, School, Landmark } from 'lucide-react';
 import { useLocation } from 'react-router-dom';
 import DashboardLayout from '../layouts/DashboardLayout';
 import EstablishmentForm from '../components/Dashboard/EstablishmentForm';
@@ -16,11 +16,16 @@ const DashboardEtablissements = () => {
   // Determine type based on URL
   const getTypeInfo = () => {
     const path = location.pathname;
-    if (path.includes('publics')) return { type: 'Public', label: 'Établissements Publics', icon: Building2, color: 'text-gabon-blue' };
+    // Sous-catégories des établissements publics (vérifier en premier car plus spécifiques)
+    if (path.includes('etablissements-publics/universites')) return { type: 'Université', label: 'Universités', icon: GraduationCap, color: 'text-blue-600' };
+    if (path.includes('etablissements-publics/instituts')) return { type: 'Institut', label: 'Instituts', icon: School, color: 'text-indigo-600' };
+    if (path.includes('etablissements-publics/grandes-ecoles')) return { type: 'Grande École', label: 'Grandes Écoles', icon: Landmark, color: 'text-amber-600' };
+    if (path.includes('etablissements-publics/centres-universitaires')) return { type: 'Centre Universitaire', label: 'Centres Universitaires', icon: Building2, color: 'text-teal-600' };
+    // Catégories principales
+    if (path.includes('etablissements-publics')) return { type: 'Public', label: 'Établissements Publics', icon: Building2, color: 'text-gabon-blue' };
     if (path.includes('prives')) return { type: 'Privé', label: 'Établissements Privés', icon: Building2, color: 'text-gabon-green' };
     if (path.includes('rup')) return { type: 'RUP', label: 'Établissements RUP', icon: Bookmark, color: 'text-emerald-600' };
     if (path.includes('inter-etat')) return { type: 'Inter-État', label: 'Établissements Inter-État', icon: Globe, color: 'text-purple-600' };
-    if (path.includes('universites')) return { type: 'Université', label: 'Universités', icon: Building2, color: 'text-blue-600' };
     return { type: 'Public', label: 'Établissements', icon: Building2, color: 'text-neutral-black' };
   };
 
@@ -42,7 +47,20 @@ const DashboardEtablissements = () => {
       { id: 5, name: 'Institut Africain d\'Informatique', acronym: 'IAI', type: 'Inter-État', director: 'Dr. Code' }
     ],
     'Université': [
-       { id: 6, name: 'Université Omar Bongo', acronym: 'UOB', type: 'Université', director: 'Pr. Recteur' }
+      { id: 6, name: 'Université Omar Bongo', acronym: 'UOB', type: 'Université', director: 'Pr. Recteur' },
+      { id: 7, name: 'Université des Sciences et Techniques de Masuku', acronym: 'USTM', type: 'Université', director: 'Pr. Vice-Recteur' }
+    ],
+    'Institut': [
+      { id: 8, name: 'Institut National des Sciences de Gestion', acronym: 'INSG', type: 'Institut', director: 'M. Directeur' },
+      { id: 9, name: 'Institut Universitaire des Sciences de l\'Organisation', acronym: 'IUSO', type: 'Institut', director: 'Dr. Gestionnaire' }
+    ],
+    'Grande École': [
+      { id: 10, name: 'École Normale Supérieure', acronym: 'ENS', type: 'Grande École', director: 'Pr. Directeur' },
+      { id: 11, name: 'École Polytechnique de Masuku', acronym: 'EPM', type: 'Grande École', director: 'Ing. Directeur' }
+    ],
+    'Centre Universitaire': [
+      { id: 12, name: 'Centre Universitaire de Port-Gentil', acronym: 'CUPG', type: 'Centre Universitaire', director: 'Dr. Responsable' },
+      { id: 13, name: 'Centre Universitaire de Franceville', acronym: 'CUF', type: 'Centre Universitaire', director: 'M. Directeur' }
     ]
   };
 
@@ -130,6 +148,10 @@ const DashboardEtablissements = () => {
             type === 'Privé' ? 'bg-gabon-green' :
             type === 'RUP' ? 'bg-emerald-600' :
             type === 'Inter-État' ? 'bg-purple-600' :
+            type === 'Université' ? 'bg-blue-600' :
+            type === 'Institut' ? 'bg-indigo-600' :
+            type === 'Grande École' ? 'bg-amber-600' :
+            type === 'Centre Universitaire' ? 'bg-teal-600' :
             'bg-gabon-blue'
           }`}
         >
@@ -191,6 +213,10 @@ const DashboardEtablissements = () => {
                         type === 'Privé' ? 'bg-green-100 text-green-700' :
                         type === 'RUP' ? 'bg-emerald-100 text-emerald-700' :
                         type === 'Inter-État' ? 'bg-purple-100 text-purple-700' :
+                        type === 'Université' ? 'bg-blue-100 text-blue-700' :
+                        type === 'Institut' ? 'bg-indigo-100 text-indigo-700' :
+                        type === 'Grande École' ? 'bg-amber-100 text-amber-700' :
+                        type === 'Centre Universitaire' ? 'bg-teal-100 text-teal-700' :
                         'bg-blue-100 text-blue-700'
                       }`}>
                         {est.acronym}

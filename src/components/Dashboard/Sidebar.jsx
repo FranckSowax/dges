@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { 
   LayoutDashboard, 
@@ -11,15 +11,32 @@ import {
   Settings,
   LogOut,
   ChevronRight,
+  ChevronDown,
   Home,
   Bookmark,
   LayoutTemplate,
   Database,
-  Bot
+  Bot,
+  School,
+  Landmark
 } from 'lucide-react';
 
 const Sidebar = () => {
   const location = useLocation();
+  const [expandedMenus, setExpandedMenus] = useState({});
+
+  // Toggle submenu expansion
+  const toggleSubmenu = (label) => {
+    setExpandedMenus(prev => ({
+      ...prev,
+      [label]: !prev[label]
+    }));
+  };
+
+  // Check if any submenu item is active
+  const isSubmenuActive = (subItems) => {
+    return subItems?.some(sub => location.pathname === sub.path);
+  };
 
   const menuItems = [
     {
@@ -48,8 +65,17 @@ const Sidebar = () => {
     {
       title: 'Établissements',
       items: [
-        { icon: GraduationCap, label: 'Universités', path: '/dashboard/universites' },
-        { icon: Building2, label: 'Établissements Publics', path: '/dashboard/etablissements-publics' },
+        { 
+          icon: Building2, 
+          label: 'Établissements Publics', 
+          path: '/dashboard/etablissements-publics',
+          subItems: [
+            { icon: GraduationCap, label: 'Universités', path: '/dashboard/etablissements-publics/universites' },
+            { icon: School, label: 'Instituts', path: '/dashboard/etablissements-publics/instituts' },
+            { icon: Landmark, label: 'Grandes Écoles', path: '/dashboard/etablissements-publics/grandes-ecoles' },
+            { icon: Building2, label: 'Centres Universitaires', path: '/dashboard/etablissements-publics/centres-universitaires' }
+          ]
+        },
         { icon: Building2, label: 'Établissements Privés', path: '/dashboard/etablissements-prives' },
         { icon: Bookmark, label: 'Établissements RUP', path: '/dashboard/etablissements-rup' },
         { icon: Globe, label: 'Établissements Inter-État', path: '/dashboard/etablissements-inter-etat' }
@@ -92,22 +118,72 @@ const Sidebar = () => {
               {section.title}
             </h2>
             <ul className="space-y-1">
-              {section.items.map((item, itemIdx) => (
-                <li key={itemIdx}>
-                  <Link
-                    to={item.path}
-                    className={`flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm font-medium transition-all ${
-                      isActive(item.path)
-                        ? 'bg-gabon-green text-white shadow-md'
-                        : 'text-neutral-gray-dark hover:bg-neutral-gray-light hover:text-neutral-black'
-                    }`}
-                  >
-                    <item.icon className={`w-5 h-5 ${isActive(item.path) ? 'text-white' : 'text-neutral-gray-dark'}`} />
-                    <span className="flex-1">{item.label}</span>
-                    {isActive(item.path) && <ChevronRight className="w-4 h-4" />}
-                  </Link>
-                </li>
-              ))}
+              {section.items.map((item, itemIdx) => {
+                const hasSubItems = item.subItems && item.subItems.length > 0;
+                const isExpanded = expandedMenus[item.label] || isSubmenuActive(item.subItems);
+                const isParentActive = isActive(item.path) || isSubmenuActive(item.subItems);
+
+                return (
+                  <li key={itemIdx}>
+                    {hasSubItems ? (
+                      <>
+                        {/* Parent menu with submenu */}
+                        <button
+                          onClick={() => toggleSubmenu(item.label)}
+                          className={`w-full flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm font-medium transition-all ${
+                            isParentActive
+                              ? 'bg-gabon-green/10 text-gabon-green'
+                              : 'text-neutral-gray-dark hover:bg-neutral-gray-light hover:text-neutral-black'
+                          }`}
+                        >
+                          <item.icon className={`w-5 h-5 ${isParentActive ? 'text-gabon-green' : 'text-neutral-gray-dark'}`} />
+                          <span className="flex-1 text-left">{item.label}</span>
+                          {isExpanded ? (
+                            <ChevronDown className="w-4 h-4" />
+                          ) : (
+                            <ChevronRight className="w-4 h-4" />
+                          )}
+                        </button>
+                        
+                        {/* Submenu items */}
+                        {isExpanded && (
+                          <ul className="mt-1 ml-4 pl-4 border-l-2 border-neutral-gray-light space-y-1">
+                            {item.subItems.map((subItem, subIdx) => (
+                              <li key={subIdx}>
+                                <Link
+                                  to={subItem.path}
+                                  className={`flex items-center gap-3 px-4 py-2 rounded-xl text-sm font-medium transition-all ${
+                                    isActive(subItem.path)
+                                      ? 'bg-gabon-green text-white shadow-md'
+                                      : 'text-neutral-gray-dark hover:bg-neutral-gray-light hover:text-neutral-black'
+                                  }`}
+                                >
+                                  <subItem.icon className={`w-4 h-4 ${isActive(subItem.path) ? 'text-white' : 'text-neutral-gray-dark'}`} />
+                                  <span className="flex-1">{subItem.label}</span>
+                                </Link>
+                              </li>
+                            ))}
+                          </ul>
+                        )}
+                      </>
+                    ) : (
+                      /* Regular menu item without submenu */
+                      <Link
+                        to={item.path}
+                        className={`flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm font-medium transition-all ${
+                          isActive(item.path)
+                            ? 'bg-gabon-green text-white shadow-md'
+                            : 'text-neutral-gray-dark hover:bg-neutral-gray-light hover:text-neutral-black'
+                        }`}
+                      >
+                        <item.icon className={`w-5 h-5 ${isActive(item.path) ? 'text-white' : 'text-neutral-gray-dark'}`} />
+                        <span className="flex-1">{item.label}</span>
+                        {isActive(item.path) && <ChevronRight className="w-4 h-4" />}
+                      </Link>
+                    )}
+                  </li>
+                );
+              })}
             </ul>
           </div>
         ))}

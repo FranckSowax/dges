@@ -81,10 +81,13 @@ ReactDOM.createRoot(document.getElementById('root')).render(
         
         <Route path="/dashboard/etablissements" element={<DashboardEtablissements />} />
         <Route path="/dashboard/etablissements-publics" element={<DashboardEtablissements />} />
+        <Route path="/dashboard/etablissements-publics/universites" element={<DashboardEtablissements />} />
+        <Route path="/dashboard/etablissements-publics/instituts" element={<DashboardEtablissements />} />
+        <Route path="/dashboard/etablissements-publics/grandes-ecoles" element={<DashboardEtablissements />} />
+        <Route path="/dashboard/etablissements-publics/centres-universitaires" element={<DashboardEtablissements />} />
         <Route path="/dashboard/etablissements-prives" element={<DashboardEtablissements />} />
         <Route path="/dashboard/etablissements-rup" element={<DashboardEtablissements />} />
         <Route path="/dashboard/etablissements-inter-etat" element={<DashboardEtablissements />} />
-        <Route path="/dashboard/universites" element={<DashboardEtablissements />} />
         <Route path="/dashboard/cooperation" element={<DashboardConventions />} />
         <Route path="/dashboard/actualites" element={<DashboardActualites />} />
         </Routes>
