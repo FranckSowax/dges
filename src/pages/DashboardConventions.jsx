@@ -26,11 +26,11 @@ const DashboardConventions = () => {
     file_type: ''
   });
 
-  // Mock data fallback
+  // Mock data fallback (IDs are for display only, not for DB operations)
   const mockAgreements = [
-    { id: 1, title: "Convention de collaboration entre l'Université de Dschang et l'USTM", category: "Convention", partner_country: "Cameroun", partner_institution: "Université de Dschang", signing_date: "2024-03-15", file_size: "2.5 MB" },
-    { id: 2, title: "Accord de coopération UOB - Université de Ngaoundéré", category: "Accord Université", partner_country: "Cameroun", partner_institution: "Université de Ngaoundéré", signing_date: "2023-06-10", file_size: "1.8 MB" },
-    { id: 3, title: "Accord-cadre ENSET - Université Cheikh Anta Diop", category: "Accord Institut", partner_country: "Sénégal", partner_institution: "UCAD Dakar", signing_date: "2023-09-20", file_size: "2.1 MB" }
+    { id: 'mock-1', title: "Convention de collaboration entre l'Université de Dschang et l'USTM", category: "Convention", partner_country: "Cameroun", partner_institution: "Université de Dschang", signing_date: "2024-03-15", file_size: "2.5 MB", isMock: true },
+    { id: 'mock-2', title: "Accord de coopération UOB - Université de Ngaoundéré", category: "Accord Université", partner_country: "Cameroun", partner_institution: "Université de Ngaoundéré", signing_date: "2023-06-10", file_size: "1.8 MB", isMock: true },
+    { id: 'mock-3', title: "Accord-cadre ENSET - Université Cheikh Anta Diop", category: "Accord Institut", partner_country: "Sénégal", partner_institution: "UCAD Dakar", signing_date: "2023-09-20", file_size: "2.1 MB", isMock: true }
   ];
 
   useEffect(() => {
@@ -165,6 +165,11 @@ const DashboardConventions = () => {
   };
 
   const handleEdit = (agreement) => {
+    // Don't allow editing mock data - create new instead
+    if (agreement.isMock) {
+      alert('Les données de démonstration ne peuvent pas être modifiées. Créez un nouvel accord.');
+      return;
+    }
     setFormData({
       title: agreement.title,
       category: agreement.category,
@@ -198,7 +203,12 @@ const DashboardConventions = () => {
     });
   };
 
-  const handleDelete = async (id) => {
+  const handleDelete = async (id, isMock) => {
+    // Don't allow deleting mock data
+    if (isMock) {
+      alert('Les données de démonstration ne peuvent pas être supprimées.');
+      return;
+    }
     if (window.confirm('Supprimer cet accord ?')) {
       try {
         const { error } = await supabase.from('cooperation_agreements').delete().eq('id', id);
@@ -206,7 +216,7 @@ const DashboardConventions = () => {
         setAgreements(agreements.filter(a => a.id !== id));
       } catch (error) {
         console.error('Error deleting:', error);
-        setAgreements(agreements.filter(a => a.id !== id));
+        alert('Erreur lors de la suppression');
       }
     }
   };
@@ -356,7 +366,7 @@ const DashboardConventions = () => {
                   </button>
                 </div>
                 <button 
-                  onClick={() => handleDelete(agreement.id)}
+                  onClick={() => handleDelete(agreement.id, agreement.isMock)}
                   className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
                   title="Supprimer"
                 >
