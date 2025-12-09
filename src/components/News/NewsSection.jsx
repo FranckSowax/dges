@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Calendar, ArrowRight, Loader, X } from 'lucide-react';
 import { supabase } from '../../supabaseClient';
@@ -58,15 +59,19 @@ const NewsSection = () => {
             </p>
           </motion.div>
 
-          <motion.button
+          <motion.div
             initial={{ opacity: 0, x: 20 }}
             whileInView={{ opacity: 1, x: 0 }}
             viewport={{ once: true }}
-            className="hidden md:flex items-center space-x-2 text-gabon-green font-medium hover:text-gabon-green-dark transition-colors"
           >
-            <span>Toutes les actualités</span>
-            <ArrowRight className="w-4 h-4" />
-          </motion.button>
+            <Link
+              to="/actualites"
+              className="hidden md:flex items-center space-x-2 text-gabon-green font-medium hover:text-gabon-green-dark transition-colors"
+            >
+              <span>Toutes les actualités</span>
+              <ArrowRight className="w-4 h-4" />
+            </Link>
+          </motion.div>
         </div>
 
         {/* Content */}
@@ -128,9 +133,9 @@ const NewsSection = () => {
 
         {/* Mobile CTA */}
         <div className="md:hidden mt-8 text-center">
-          <button className="btn-secondary w-full">
+          <Link to="/actualites" className="btn-secondary w-full inline-block">
             Toutes les actualités
-          </button>
+          </Link>
         </div>
       </div>
 

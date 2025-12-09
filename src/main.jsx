@@ -19,6 +19,7 @@ import EtablissementsPrives from './pages/EtablissementsPrives.jsx'
 import EtablissementsRUP from './pages/EtablissementsRUP.jsx'
 import EtablissementsInterEtat from './pages/EtablissementsInterEtat.jsx'
 import ConventionsCooperation from './pages/ConventionsCooperation.jsx'
+import Actualites from './pages/Actualites.jsx'
 import Dashboard from './pages/Dashboard.jsx'
 import DashboardEtablissements from './pages/DashboardEtablissements.jsx'
 import DashboardConventions from './pages/DashboardConventions.jsx'
@@ -68,6 +69,7 @@ ReactDOM.createRoot(document.getElementById('root')).render(
         <Route path="/etablissements-rup" element={<EtablissementsRUP />} />
         <Route path="/etablissements-inter-etat" element={<EtablissementsInterEtat />} />
         <Route path="/cooperation/accords" element={<ConventionsCooperation />} />
+        <Route path="/actualites" element={<Actualites />} />
         
         {/* Dashboard Routes */}
         <Route path="/dashboard" element={<Dashboard />} />
