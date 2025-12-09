@@ -2,10 +2,12 @@ import React, { useState, useEffect } from 'react';
 import { Search, Sparkles, ArrowRight } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { supabase } from '../../supabaseClient';
+import { useChat } from '../../context/ChatContext';
 
 const HeroSection = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [isFocused, setIsFocused] = useState(false);
+  const { openChatWithMessage } = useChat();
   const [heroConfig, setHeroConfig] = useState({
     media_type: 'video',
     media_url: 'https://res.cloudinary.com/dln7mhq4z/video/upload/v1732114938/v4_ou0bi6.mp4', // Default fallback
@@ -48,8 +50,11 @@ const HeroSection = () => {
 
   const handleSearch = (e) => {
     e.preventDefault();
-    console.log('Recherche:', searchQuery);
-    // Ici, intégration avec l'IA
+    if (searchQuery.trim()) {
+      openChatWithMessage(searchQuery);
+      setSearchQuery('');
+      setIsFocused(false);
+    }
   };
 
   return (
@@ -129,7 +134,10 @@ const HeroSection = () => {
                       {suggestedQuestions.map((question, index) => (
                         <button
                           key={index}
-                          onClick={() => setSearchQuery(question)}
+                          onClick={() => {
+                            openChatWithMessage(question);
+                            setIsFocused(false);
+                          }}
                           className="w-full text-left px-3 sm:px-4 py-2 rounded-lg hover:bg-gabon-green-light text-xs sm:text-sm text-neutral-black transition-colors"
                         >
                           {question}
