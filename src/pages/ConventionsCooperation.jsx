@@ -1,195 +1,172 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { Search, FileText, Calendar, Download, Eye, GraduationCap, Building2 } from 'lucide-react';
+import { Search, FileText, Calendar, Download, Eye, GraduationCap, Building2, Globe, Loader } from 'lucide-react';
 import Header from '../components/Navigation/Header';
 import Footer from '../components/Footer/Footer';
 import ChatbotWidget from '../components/Chatbot/ChatbotWidget';
+import { supabase } from '../supabaseClient';
 
 const ConventionsCooperation = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [activeFilter, setActiveFilter] = useState('all');
+  const [agreements, setAgreements] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  // Mock data fallback
+  const mockAgreements = [
+    { id: 1, title: "Convention de collaboration entre l'Université de Dschang et l'USTM", category: "Convention", partner_country: "Cameroun", partner_institution: "Université de Dschang", signing_date: "2024-03-15", file_size: "2.5 MB" },
+    { id: 2, title: "Convention de coopération dans le domaine de la formation professionnelle", category: "Convention", partner_country: "France", partner_institution: "Ministère de l'Éducation", signing_date: "2024-01-20", file_size: "1.8 MB" },
+    { id: 3, title: "Convention de coopération ENSET - Université de Douala", category: "Convention", partner_country: "Cameroun", partner_institution: "Université de Douala", signing_date: "2023-09-10", file_size: "2.1 MB" },
+    { id: 4, title: "Convention de partenariat INSG - Petro Gabon", category: "Convention", partner_country: "Gabon", partner_institution: "Petro Gabon", signing_date: "2024-02-15", file_size: "1.9 MB" },
+    { id: 5, title: "Convention portant création de l'EAMAU", category: "Convention", partner_country: "Multi-pays", partner_institution: "EAMAU", signing_date: "2022-06-01", file_size: "4.5 MB" },
+    { id: 6, title: "Accord de coopération UOB - Université de Ngaoundéré", category: "Accord Université", partner_country: "Cameroun", partner_institution: "Université de Ngaoundéré", signing_date: "2023-05-20", file_size: "1.6 MB" },
+    { id: 7, title: "Accord-cadre UOB - Université d'Abomey-Calavi", category: "Accord Université", partner_country: "Bénin", partner_institution: "Université d'Abomey-Calavi", signing_date: "2024-01-10", file_size: "2.0 MB" },
+    { id: 8, title: "Accord-cadre ENSET - Université Cheikh Anta Diop", category: "Accord Institut", partner_country: "Sénégal", partner_institution: "UCAD Dakar", signing_date: "2023-09-20", file_size: "1.8 MB" }
+  ];
 
   useEffect(() => {
     window.scrollTo(0, 0);
+    fetchAgreements();
   }, []);
 
-  const conventions = [
-    {
-      id: 1,
-      title: "Convention de collaboration entre l'Université de Dschang et l'Université des Sciences et Techniques de Masuku",
-      category: "conventions",
-      date: "2024",
-      size: "2.5 MB"
-    },
-    {
-      id: 2,
-      title: "Convention de coopération dans le domaine de la formation professionnelle",
-      category: "conventions",
-      date: "2024",
-      size: "1.8 MB"
-    },
-    {
-      id: 3,
-      title: "Convention de coopération entre ENSET et l'Université de Douala",
-      category: "conventions",
-      date: "2023",
-      size: "2.1 MB"
-    },
-    {
-      id: 4,
-      title: "Convention de coopération entre l'École Normale Supérieure d'Enseignement Technique (ENSET) et l'Université de Douala (Cameroun)",
-      category: "conventions",
-      date: "2023",
-      size: "2.3 MB"
-    },
-    {
-      id: 5,
-      title: "Convention de partenariat entre l'Institut National des Sciences de Gestion et Petro Gabon",
-      category: "conventions",
-      date: "2024",
-      size: "1.9 MB"
-    },
-    {
-      id: 6,
-      title: "Convention de partenariat entre le Ministère des Affaires Étrangères de la Francophonie et de l'Intégration Régionale et l'Institut des Sciences de Gestion",
-      category: "conventions",
-      date: "2024",
-      size: "3.1 MB"
-    },
-    {
-      id: 7,
-      title: "Convention École Normale Supérieure de Libreville - Faculté des Sciences (USTM) de Franceville",
-      category: "conventions",
-      date: "2023",
-      size: "2.2 MB"
-    },
-    {
-      id: 8,
-      title: "Convention portant création, organisation et fonctionnement de l'EAMAU",
-      category: "conventions",
-      date: "2022",
-      size: "4.5 MB"
-    },
-    {
-      id: 9,
-      title: "Convention portant création, organisation et fonctionnement de l'École Africaine des Métiers de l'Architecture et de l'Urbanisme (EAMAU)",
-      category: "conventions",
-      date: "2022",
-      size: "4.2 MB"
-    },
-    {
-      id: 10,
-      title: "Convention spécifique de partenariat et de coopération entre l'Institut International de Berthe et Jean Universiapolis - Université Internationale d'Agadir (Maroc)",
-      category: "conventions",
-      date: "2024",
-      size: "2.7 MB"
+  const fetchAgreements = async () => {
+    setLoading(true);
+    try {
+      const { data, error } = await supabase
+        .from('cooperation_agreements')
+        .select('*')
+        .order('signing_date', { ascending: false });
+
+      if (error) throw error;
+      setAgreements(data && data.length > 0 ? data : mockAgreements);
+    } catch (error) {
+      console.warn('Supabase fetch error (using mock data):', error.message);
+      setAgreements(mockAgreements);
+    } finally {
+      setLoading(false);
     }
-  ];
+  };
 
-  const universitesAccords = [
-    {
-      id: 11,
-      title: "Accord de coopération entre l'UOB de Libreville et l'Université de Ngaoundéré du Cameroun",
-      category: "universites",
-      date: "2023",
-      size: "1.6 MB"
-    },
-    {
-      id: 12,
-      title: "Accord de coopération entre l'Université de Ngaoundéré et l'Université Omar Bongo de Libreville",
-      category: "universites",
-      date: "2023",
-      size: "1.5 MB"
-    },
-    {
-      id: 13,
-      title: "Accord-cadre de coopération scientifique et pédagogique entre l'Université Omar Bongo et l'Université d'Abomey-Calavi (Bénin)",
-      category: "universites",
-      date: "2024",
-      size: "2.0 MB"
-    }
-  ];
+  // Map categories for filtering
+  const getCategoryKey = (category) => {
+    if (category === 'Convention') return 'conventions';
+    if (category === 'Accord Université') return 'universites';
+    if (category === 'Accord Institut') return 'instituts';
+    return 'conventions';
+  };
 
-  const institutsAccords = [
-    {
-      id: 14,
-      title: "Accord-cadre entre l'École Normale Supérieure de l'Enseignement Technique de Libreville et l'Université Cheikh Anta Diop de Dakar",
-      category: "instituts",
-      date: "2023",
-      size: "1.8 MB"
-    },
-    {
-      id: 15,
-      title: "Accord-cadre de coopération entre l'Université Cheikh Anta Diop de Dakar et l'ENSET Libreville",
-      category: "instituts",
-      date: "2023",
-      size: "1.7 MB"
-    }
-  ];
-
-  const allDocuments = [...conventions, ...universitesAccords, ...institutsAccords];
-
-  const filteredDocuments = allDocuments.filter(doc => {
-    const matchesSearch = doc.title.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesFilter = activeFilter === 'all' || doc.category === activeFilter;
+  const filteredAgreements = agreements.filter(agreement => {
+    const matchesSearch = agreement.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      agreement.partner_country?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      agreement.partner_institution?.toLowerCase().includes(searchTerm.toLowerCase());
+    const categoryKey = getCategoryKey(agreement.category);
+    const matchesFilter = activeFilter === 'all' || categoryKey === activeFilter;
     return matchesSearch && matchesFilter;
   });
 
-  const getFilteredByCategory = (category) => {
-    return filteredDocuments.filter(doc => doc.category === category);
+  const getFilteredByCategory = (categoryKey) => {
+    return filteredAgreements.filter(agreement => getCategoryKey(agreement.category) === categoryKey);
   };
 
-  const handleView = (doc) => {
-    alert(`Visualisation de : ${doc.title}\n\nCette fonctionnalité ouvrira le PDF dans une visionneuse intégrée.`);
+  const handleView = (agreement) => {
+    if (agreement.file_url) {
+      window.open(agreement.file_url, '_blank');
+    } else {
+      alert(`Aucun fichier disponible pour : ${agreement.title}`);
+    }
   };
 
-  const handleDownload = (doc) => {
-    alert(`Téléchargement de : ${doc.title}\n\nFichier : ${doc.size}`);
+  const handleDownload = (agreement) => {
+    if (agreement.file_url) {
+      const link = document.createElement('a');
+      link.href = agreement.file_url;
+      link.download = `${agreement.title}.pdf`;
+      link.click();
+    } else {
+      alert(`Aucun fichier disponible pour : ${agreement.title}`);
+    }
   };
 
-  const DocumentCard = ({ doc }) => (
+  // Stats
+  const stats = {
+    conventions: agreements.filter(a => a.category === 'Convention').length,
+    universites: agreements.filter(a => a.category === 'Accord Université').length,
+    instituts: agreements.filter(a => a.category === 'Accord Institut').length,
+    countries: [...new Set(agreements.map(a => a.partner_country).filter(Boolean))].length
+  };
+
+  const DocumentCard = ({ agreement }) => (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true }}
       transition={{ duration: 0.4 }}
-      className="bg-white rounded-2xl p-6 shadow-lg hover:shadow-xl transition-all duration-300 border-2 border-transparent hover:border-gabon-blue relative overflow-hidden group"
+      className="bg-white rounded-3xl overflow-hidden shadow-lg hover:shadow-xl transition-all duration-300 group hover:-translate-y-2"
     >
-      <div className="absolute top-0 left-0 w-1 h-full bg-gradient-to-b from-gabon-blue to-gabon-blue-dark opacity-0 group-hover:opacity-100 transition-opacity" />
-      
-      <div className="flex items-start gap-4 mb-5">
-        <div className="w-12 h-12 bg-gradient-to-br from-yellow-100 to-yellow-200 rounded-xl flex items-center justify-center flex-shrink-0">
-          <FileText className="w-7 h-7 text-yellow-600" />
-        </div>
-        
-        <div className="flex-1">
-          <h3 className="text-base font-semibold text-neutral-black leading-snug mb-2">
-            {doc.title}
-          </h3>
-          <div className="flex gap-4 text-sm text-neutral-gray-dark">
-            <div className="flex items-center gap-1.5">
-              <Calendar className="w-3.5 h-3.5" />
-              {doc.date}
-            </div>
-            <div className="flex items-center gap-1.5">
-              <FileText className="w-3.5 h-3.5" />
-              {doc.size}
-            </div>
+      {/* Card Header with gradient */}
+      <div className="relative p-6 bg-gradient-to-br from-gabon-blue/10 to-gabon-blue/5">
+        <div className="flex items-start gap-4">
+          <div className="w-14 h-14 bg-gradient-to-br from-gabon-blue to-gabon-blue-dark rounded-2xl flex items-center justify-center flex-shrink-0 shadow-lg">
+            <FileText className="w-7 h-7 text-white" />
+          </div>
+          
+          <div className="flex-1">
+            <span className={`inline-block px-3 py-1 rounded-full text-xs font-semibold mb-2 ${
+              agreement.category === 'Convention' ? 'bg-blue-100 text-blue-700' :
+              agreement.category === 'Accord Université' ? 'bg-green-100 text-green-700' :
+              'bg-purple-100 text-purple-700'
+            }`}>
+              {agreement.category}
+            </span>
+            <h3 className="text-base font-bold text-neutral-black leading-snug line-clamp-2">
+              {agreement.title}
+            </h3>
           </div>
         </div>
       </div>
 
-      <div className="flex gap-3 pt-5 border-t border-neutral-gray-light">
+      {/* Card Body */}
+      <div className="p-6 pt-4 space-y-3">
+        {agreement.partner_institution && (
+          <div className="flex items-center gap-2 text-sm text-neutral-gray-dark">
+            <Globe className="w-4 h-4 text-gabon-blue" />
+            <span>{agreement.partner_institution}</span>
+          </div>
+        )}
+        {agreement.partner_country && (
+          <div className="flex items-center gap-2 text-sm text-neutral-gray-dark">
+            <span>🌍</span>
+            <span>{agreement.partner_country}</span>
+          </div>
+        )}
+        <div className="flex items-center gap-4 text-sm text-neutral-gray-dark">
+          {agreement.signing_date && (
+            <div className="flex items-center gap-1.5">
+              <Calendar className="w-4 h-4" />
+              {new Date(agreement.signing_date).toLocaleDateString('fr-FR', { year: 'numeric', month: 'short' })}
+            </div>
+          )}
+          {agreement.file_size && (
+            <div className="flex items-center gap-1.5">
+              <FileText className="w-4 h-4" />
+              {agreement.file_size}
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Card Actions */}
+      <div className="flex gap-3 p-6 pt-0">
         <button
-          onClick={() => handleView(doc)}
-          className="flex-1 py-2.5 px-4 bg-gradient-to-r from-gabon-blue to-gabon-blue-dark text-white rounded-xl font-semibold text-sm flex items-center justify-center gap-2 hover:shadow-lg transition-all"
+          onClick={() => handleView(agreement)}
+          className="flex-1 py-3 px-4 bg-gradient-to-r from-gabon-blue to-gabon-blue-dark text-white rounded-xl font-semibold text-sm flex items-center justify-center gap-2 hover:shadow-lg transition-all"
         >
           <Eye className="w-4 h-4" />
           Visualiser
         </button>
         <button
-          onClick={() => handleDownload(doc)}
-          className="flex-1 py-2.5 px-4 bg-neutral-background text-neutral-black rounded-xl font-semibold text-sm flex items-center justify-center gap-2 border-2 border-neutral-gray-light hover:border-gabon-blue transition-all"
+          onClick={() => handleDownload(agreement)}
+          className="flex-1 py-3 px-4 bg-neutral-background text-neutral-black rounded-xl font-semibold text-sm flex items-center justify-center gap-2 border-2 border-neutral-gray-light hover:border-gabon-blue transition-all"
         >
           <Download className="w-4 h-4" />
           Télécharger
@@ -198,7 +175,7 @@ const ConventionsCooperation = () => {
     </motion.div>
   );
 
-  const Section = ({ title, icon: Icon, count, documents, show }) => {
+  const Section = ({ title, icon: Icon, count, agreements: sectionAgreements, show }) => {
     if (!show) return null;
     
     return (
@@ -213,7 +190,7 @@ const ConventionsCooperation = () => {
           </span>
         </div>
 
-        {documents.length === 0 ? (
+        {sectionAgreements.length === 0 ? (
           <div className="bg-white rounded-2xl p-20 text-center shadow-md">
             <div className="text-6xl mb-4 opacity-30">📄</div>
             <h3 className="text-xl font-semibold text-neutral-black mb-2">Aucun document disponible</h3>
@@ -221,8 +198,8 @@ const ConventionsCooperation = () => {
           </div>
         ) : (
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {documents.map(doc => (
-              <DocumentCard key={doc.id} doc={doc} />
+            {sectionAgreements.map(agreement => (
+              <DocumentCard key={agreement.id} agreement={agreement} />
             ))}
           </div>
         )}
@@ -263,10 +240,10 @@ const ConventionsCooperation = () => {
         <div className="container-custom">
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-6">
             {[
-              { number: allDocuments.length, label: 'Conventions' },
-              { number: universitesAccords.length, label: 'Accords Universités' },
-              { number: institutsAccords.length, label: 'Accords Instituts' },
-              { number: '5+', label: 'Pays Partenaires' }
+              { number: stats.conventions, label: 'Conventions' },
+              { number: stats.universites, label: 'Accords Universités' },
+              { number: stats.instituts, label: 'Accords Instituts' },
+              { number: stats.countries || '5+', label: 'Pays Partenaires' }
             ].map((stat, idx) => (
               <motion.div
                 key={idx}
@@ -333,29 +310,37 @@ const ConventionsCooperation = () => {
       {/* Documents Sections */}
       <section className="py-8 pb-20">
         <div className="container-custom">
-          <Section
-            title="Conventions de Coopération"
-            icon={FileText}
-            count={getFilteredByCategory('conventions').length}
-            documents={getFilteredByCategory('conventions')}
-            show={activeFilter === 'all' || activeFilter === 'conventions'}
-          />
+          {loading ? (
+            <div className="flex justify-center py-20">
+              <Loader className="w-10 h-10 text-gabon-blue animate-spin" />
+            </div>
+          ) : (
+            <>
+              <Section
+                title="Conventions de Coopération"
+                icon={FileText}
+                count={getFilteredByCategory('conventions').length}
+                agreements={getFilteredByCategory('conventions')}
+                show={activeFilter === 'all' || activeFilter === 'conventions'}
+              />
 
-          <Section
-            title="Accords-Cadres Universités"
-            icon={GraduationCap}
-            count={getFilteredByCategory('universites').length}
-            documents={getFilteredByCategory('universites')}
-            show={activeFilter === 'all' || activeFilter === 'universites'}
-          />
+              <Section
+                title="Accords-Cadres Universités"
+                icon={GraduationCap}
+                count={getFilteredByCategory('universites').length}
+                agreements={getFilteredByCategory('universites')}
+                show={activeFilter === 'all' || activeFilter === 'universites'}
+              />
 
-          <Section
-            title="Accords-Cadres Instituts & Grandes Écoles"
-            icon={Building2}
-            count={getFilteredByCategory('instituts').length}
-            documents={getFilteredByCategory('instituts')}
-            show={activeFilter === 'all' || activeFilter === 'instituts'}
-          />
+              <Section
+                title="Accords-Cadres Instituts & Grandes Écoles"
+                icon={Building2}
+                count={getFilteredByCategory('instituts').length}
+                agreements={getFilteredByCategory('instituts')}
+                show={activeFilter === 'all' || activeFilter === 'instituts'}
+              />
+            </>
+          )}
         </div>
       </section>
 

@@ -1,45 +1,51 @@
 import React, { useState, useEffect } from 'react';
-import { Plus, Search, FileText, Trash2, Eye, Upload, Download } from 'lucide-react';
+import { Plus, Search, FileText, Trash2, Eye, Upload, Download, Edit, Globe, Calendar } from 'lucide-react';
 import DashboardLayout from '../layouts/DashboardLayout';
 import { supabase } from '../supabaseClient';
 
 const DashboardConventions = () => {
-  const [documents, setDocuments] = useState([]);
+  const [agreements, setAgreements] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [showForm, setShowForm] = useState(false);
   const [uploading, setUploading] = useState(false);
+  const [editingId, setEditingId] = useState(null);
   
   const [formData, setFormData] = useState({
     title: '',
-    category: 'Convention', // Convention, Accord Université, Accord Institut
+    category: 'Convention',
+    description: '',
+    partner_country: '',
+    partner_institution: '',
+    signing_date: '',
     file: null,
     file_url: ''
   });
 
   // Mock data fallback
-  const mockDocs = [
-    { id: 1, title: "Convention Cadre UOB-France", category: "Convention", size: "2.5 MB", date: "2024-03-15" },
-    { id: 2, title: "Accord Mobilité Étudiante", category: "Accord Université", size: "1.2 MB", date: "2024-02-10" }
+  const mockAgreements = [
+    { id: 1, title: "Convention de collaboration entre l'Université de Dschang et l'USTM", category: "Convention", partner_country: "Cameroun", partner_institution: "Université de Dschang", signing_date: "2024-03-15", file_size: "2.5 MB" },
+    { id: 2, title: "Accord de coopération UOB - Université de Ngaoundéré", category: "Accord Université", partner_country: "Cameroun", partner_institution: "Université de Ngaoundéré", signing_date: "2023-06-10", file_size: "1.8 MB" },
+    { id: 3, title: "Accord-cadre ENSET - Université Cheikh Anta Diop", category: "Accord Institut", partner_country: "Sénégal", partner_institution: "UCAD Dakar", signing_date: "2023-09-20", file_size: "2.1 MB" }
   ];
 
   useEffect(() => {
-    fetchDocuments();
+    fetchAgreements();
   }, []);
 
-  const fetchDocuments = async () => {
+  const fetchAgreements = async () => {
     setLoading(true);
     try {
       const { data, error } = await supabase
-        .from('documents')
+        .from('cooperation_agreements')
         .select('*')
         .order('created_at', { ascending: false });
 
       if (error) throw error;
-      setDocuments(data || []);
+      setAgreements(data && data.length > 0 ? data : mockAgreements);
     } catch (error) {
       console.warn('Supabase fetch error (using mock data):', error.message);
-      setDocuments(mockDocs);
+      setAgreements(mockAgreements);
     } finally {
       setLoading(false);
     }
@@ -73,66 +79,134 @@ const DashboardConventions = () => {
         fileUrl = await handleFileUpload(formData.file);
       }
 
-      const docData = {
+      const agreementData = {
         title: formData.title,
         category: formData.category,
-        url: fileUrl,
-        size: formData.file ? `${(formData.file.size / 1024 / 1024).toFixed(2)} MB` : '0 MB',
-        created_at: new Date().toISOString()
+        description: formData.description,
+        partner_country: formData.partner_country,
+        partner_institution: formData.partner_institution,
+        signing_date: formData.signing_date || null,
+        file_url: fileUrl,
+        file_size: formData.file ? `${(formData.file.size / 1024 / 1024).toFixed(2)} MB` : null
       };
 
-      const { data, error } = await supabase
-        .from('documents')
-        .insert([docData])
-        .select();
+      if (editingId) {
+        const { data, error } = await supabase
+          .from('cooperation_agreements')
+          .update(agreementData)
+          .eq('id', editingId)
+          .select();
 
-      if (error) throw error;
+        if (error) throw error;
+        setAgreements(agreements.map(a => a.id === editingId ? data[0] : a));
+      } else {
+        const { data, error } = await supabase
+          .from('cooperation_agreements')
+          .insert([agreementData])
+          .select();
 
-      setDocuments([data[0], ...documents]);
-      setShowForm(false);
-      setFormData({ title: '', category: 'Convention', file: null, file_url: '' });
+        if (error) throw error;
+        setAgreements([data[0], ...agreements]);
+      }
+
+      resetForm();
     } catch (error) {
-      console.error('Error uploading:', error);
-      alert('Erreur lors de l\'upload');
+      console.error('Error saving:', error);
+      alert('Erreur lors de l\'enregistrement');
     } finally {
       setUploading(false);
     }
   };
 
+  const handleEdit = (agreement) => {
+    setFormData({
+      title: agreement.title,
+      category: agreement.category,
+      description: agreement.description || '',
+      partner_country: agreement.partner_country || '',
+      partner_institution: agreement.partner_institution || '',
+      signing_date: agreement.signing_date || '',
+      file: null,
+      file_url: agreement.file_url || ''
+    });
+    setEditingId(agreement.id);
+    setShowForm(true);
+  };
+
+  const resetForm = () => {
+    setShowForm(false);
+    setEditingId(null);
+    setFormData({
+      title: '',
+      category: 'Convention',
+      description: '',
+      partner_country: '',
+      partner_institution: '',
+      signing_date: '',
+      file: null,
+      file_url: ''
+    });
+  };
+
   const handleDelete = async (id) => {
-    if (window.confirm('Supprimer ce document ?')) {
+    if (window.confirm('Supprimer cet accord ?')) {
       try {
-        const { error } = await supabase.from('documents').delete().eq('id', id);
+        const { error } = await supabase.from('cooperation_agreements').delete().eq('id', id);
         if (error) throw error;
-        setDocuments(documents.filter(d => d.id !== id));
+        setAgreements(agreements.filter(a => a.id !== id));
       } catch (error) {
         console.error('Error deleting:', error);
-        setDocuments(documents.filter(d => d.id !== id));
+        setAgreements(agreements.filter(a => a.id !== id));
       }
     }
   };
 
-  const filteredDocs = documents.filter(doc => 
-    doc.title.toLowerCase().includes(searchTerm.toLowerCase())
+  const filteredAgreements = agreements.filter(agreement => 
+    agreement.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    agreement.partner_country?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    agreement.partner_institution?.toLowerCase().includes(searchTerm.toLowerCase())
   );
+
+  const getCategoryColor = (category) => {
+    switch(category) {
+      case 'Convention': return 'bg-blue-100 text-blue-700';
+      case 'Accord Université': return 'bg-green-100 text-green-700';
+      case 'Accord Institut': return 'bg-purple-100 text-purple-700';
+      default: return 'bg-gray-100 text-gray-700';
+    }
+  };
 
   return (
     <DashboardLayout>
       <div className="flex justify-between items-center mb-8">
         <div>
           <h1 className="text-2xl font-bold text-neutral-black flex items-center gap-3">
-            <FileText className="w-8 h-8 text-gabon-blue" />
-            Gestion des Conventions
+            <Globe className="w-8 h-8 text-gabon-blue" />
+            Coopération Internationale
           </h1>
-          <p className="text-neutral-gray-dark mt-1">Gérez les documents de coopération</p>
+          <p className="text-neutral-gray-dark mt-1">Gérez les accords et conventions de coopération</p>
         </div>
         <button
           onClick={() => setShowForm(true)}
           className="px-4 py-2 bg-gabon-blue text-white rounded-xl font-medium hover:bg-blue-700 transition-colors flex items-center gap-2 shadow-lg"
         >
-          <Upload className="w-5 h-5" />
-          Ajouter un document
+          <Plus className="w-5 h-5" />
+          Nouvel accord
         </button>
+      </div>
+
+      {/* Stats */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+        {[
+          { label: 'Conventions', count: agreements.filter(a => a.category === 'Convention').length, color: 'blue' },
+          { label: 'Accords Universités', count: agreements.filter(a => a.category === 'Accord Université').length, color: 'green' },
+          { label: 'Accords Instituts', count: agreements.filter(a => a.category === 'Accord Institut').length, color: 'purple' }
+        ].map((stat, idx) => (
+          <div key={idx} className={`bg-white p-4 rounded-xl border border-neutral-gray-light`}>
+            <div className={`text-3xl font-bold text-${stat.color}-600`}>{stat.count}</div>
+            <div className="text-sm text-neutral-gray-dark">{stat.label}</div>
+          </div>
+        ))}
       </div>
 
       {/* Search */}
@@ -141,7 +215,7 @@ const DashboardConventions = () => {
           <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-neutral-gray-dark" />
           <input
             type="text"
-            placeholder="Rechercher une convention..."
+            placeholder="Rechercher par titre, pays ou institution..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             className="w-full pl-12 pr-4 py-3 rounded-xl border border-neutral-gray-light focus:border-gabon-blue focus:ring-2 focus:ring-gabon-blue/20 outline-none transition-all"
@@ -149,84 +223,115 @@ const DashboardConventions = () => {
         </div>
       </div>
 
-      {/* List */}
-      <div className="bg-white rounded-2xl shadow-sm border border-neutral-gray-light overflow-hidden">
-        <table className="w-full">
-          <thead className="bg-neutral-background border-b border-neutral-gray-light">
-            <tr>
-              <th className="px-6 py-4 text-left text-sm font-semibold text-neutral-gray-dark">Document</th>
-              <th className="px-6 py-4 text-left text-sm font-semibold text-neutral-gray-dark">Catégorie</th>
-              <th className="px-6 py-4 text-left text-sm font-semibold text-neutral-gray-dark">Date</th>
-              <th className="px-6 py-4 text-right text-sm font-semibold text-neutral-gray-dark">Actions</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-neutral-gray-light">
-            {loading ? (
-              <tr><td colSpan="4" className="p-8 text-center text-neutral-gray-dark">Chargement...</td></tr>
-            ) : filteredDocs.length === 0 ? (
-              <tr><td colSpan="4" className="p-8 text-center text-neutral-gray-dark">Aucun document</td></tr>
-            ) : (
-              filteredDocs.map((doc) => (
-                <tr key={doc.id} className="hover:bg-neutral-background/50">
-                  <td className="px-6 py-4">
-                    <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 bg-blue-50 rounded-lg flex items-center justify-center text-blue-600">
-                        <FileText className="w-5 h-5" />
-                      </div>
-                      <div>
-                        <div className="font-medium text-neutral-black">{doc.title}</div>
-                        <div className="text-xs text-neutral-gray-dark">{doc.size}</div>
-                      </div>
-                    </div>
-                  </td>
-                  <td className="px-6 py-4">
-                    <span className="px-3 py-1 bg-neutral-gray-light rounded-full text-sm font-medium text-neutral-gray-dark">
-                      {doc.category}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4 text-sm text-neutral-black">
-                    {doc.date || new Date(doc.created_at).toLocaleDateString()}
-                  </td>
-                  <td className="px-6 py-4 text-right">
-                    <div className="flex justify-end gap-2">
-                      <button className="p-2 text-gabon-blue hover:bg-blue-50 rounded-lg transition-colors">
-                        <Download className="w-4 h-4" />
-                      </button>
-                      <button 
-                        onClick={() => handleDelete(doc.id)}
-                        className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-              ))
-            )}
-          </tbody>
-        </table>
+      {/* Cards Grid */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {loading ? (
+          <div className="col-span-full p-8 text-center text-neutral-gray-dark">Chargement...</div>
+        ) : filteredAgreements.length === 0 ? (
+          <div className="col-span-full bg-white rounded-2xl p-12 text-center">
+            <FileText className="w-16 h-16 text-neutral-gray-light mx-auto mb-4" />
+            <h3 className="text-lg font-semibold text-neutral-black mb-2">Aucun accord</h3>
+            <p className="text-neutral-gray-dark">Ajoutez votre premier accord de coopération</p>
+          </div>
+        ) : (
+          filteredAgreements.map((agreement) => (
+            <div key={agreement.id} className="bg-white rounded-2xl shadow-sm border border-neutral-gray-light overflow-hidden hover:shadow-lg transition-shadow group">
+              {/* Card Header */}
+              <div className="p-5 border-b border-neutral-gray-light">
+                <div className="flex items-start justify-between mb-3">
+                  <div className="w-12 h-12 bg-gradient-to-br from-gabon-blue to-gabon-blue-dark rounded-xl flex items-center justify-center text-white">
+                    <FileText className="w-6 h-6" />
+                  </div>
+                  <span className={`px-3 py-1 rounded-full text-xs font-semibold ${getCategoryColor(agreement.category)}`}>
+                    {agreement.category}
+                  </span>
+                </div>
+                <h3 className="font-semibold text-neutral-black line-clamp-2 mb-2">{agreement.title}</h3>
+                {agreement.description && (
+                  <p className="text-sm text-neutral-gray-dark line-clamp-2">{agreement.description}</p>
+                )}
+              </div>
+
+              {/* Card Body */}
+              <div className="p-5 space-y-2">
+                {agreement.partner_institution && (
+                  <div className="flex items-center gap-2 text-sm">
+                    <Globe className="w-4 h-4 text-gabon-blue" />
+                    <span className="text-neutral-gray-dark">{agreement.partner_institution}</span>
+                  </div>
+                )}
+                {agreement.partner_country && (
+                  <div className="flex items-center gap-2 text-sm">
+                    <span className="text-neutral-gray-dark">🌍 {agreement.partner_country}</span>
+                  </div>
+                )}
+                {agreement.signing_date && (
+                  <div className="flex items-center gap-2 text-sm">
+                    <Calendar className="w-4 h-4 text-gabon-blue" />
+                    <span className="text-neutral-gray-dark">{new Date(agreement.signing_date).toLocaleDateString('fr-FR')}</span>
+                  </div>
+                )}
+                {agreement.file_size && (
+                  <div className="text-xs text-neutral-gray-dark">📄 {agreement.file_size}</div>
+                )}
+              </div>
+
+              {/* Card Actions */}
+              <div className="px-5 py-3 bg-neutral-background border-t border-neutral-gray-light flex justify-between">
+                <div className="flex gap-2">
+                  {agreement.file_url && (
+                    <a 
+                      href={agreement.file_url} 
+                      target="_blank" 
+                      rel="noopener noreferrer"
+                      className="p-2 text-gabon-blue hover:bg-blue-50 rounded-lg transition-colors"
+                    >
+                      <Download className="w-4 h-4" />
+                    </a>
+                  )}
+                  <button 
+                    onClick={() => handleEdit(agreement)}
+                    className="p-2 text-amber-600 hover:bg-amber-50 rounded-lg transition-colors"
+                  >
+                    <Edit className="w-4 h-4" />
+                  </button>
+                </div>
+                <button 
+                  onClick={() => handleDelete(agreement.id)}
+                  className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                >
+                  <Trash2 className="w-4 h-4" />
+                </button>
+              </div>
+            </div>
+          ))
+        )}
       </div>
 
       {/* Modal Form */}
       {showForm && (
-        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-2xl w-full max-w-lg p-6">
-            <h2 className="text-xl font-bold mb-6">Ajouter un document</h2>
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4 overflow-y-auto">
+          <div className="bg-white rounded-2xl w-full max-w-lg p-6 my-8">
+            <h2 className="text-xl font-bold mb-6">
+              {editingId ? 'Modifier l\'accord' : 'Nouvel accord de coopération'}
+            </h2>
             <form onSubmit={handleSubmit} className="space-y-4">
               <div>
-                <label className="block text-sm font-medium mb-2">Titre</label>
+                <label className="block text-sm font-medium mb-2">Titre *</label>
                 <input
                   type="text"
                   required
-                  className="w-full p-3 border rounded-xl"
+                  className="w-full p-3 border rounded-xl focus:border-gabon-blue focus:ring-2 focus:ring-gabon-blue/20 outline-none"
                   value={formData.title}
                   onChange={e => setFormData({...formData, title: e.target.value})}
+                  placeholder="Ex: Convention de coopération UOB - Université de Paris"
                 />
               </div>
+              
               <div>
-                <label className="block text-sm font-medium mb-2">Catégorie</label>
+                <label className="block text-sm font-medium mb-2">Catégorie *</label>
                 <select
-                  className="w-full p-3 border rounded-xl"
+                  className="w-full p-3 border rounded-xl focus:border-gabon-blue focus:ring-2 focus:ring-gabon-blue/20 outline-none"
                   value={formData.category}
                   onChange={e => setFormData({...formData, category: e.target.value})}
                 >
@@ -235,19 +340,68 @@ const DashboardConventions = () => {
                   <option value="Accord Institut">Accord Institut</option>
                 </select>
               </div>
+
               <div>
-                <label className="block text-sm font-medium mb-2">Fichier (PDF)</label>
+                <label className="block text-sm font-medium mb-2">Description</label>
+                <textarea
+                  className="w-full p-3 border rounded-xl focus:border-gabon-blue focus:ring-2 focus:ring-gabon-blue/20 outline-none"
+                  rows="3"
+                  value={formData.description}
+                  onChange={e => setFormData({...formData, description: e.target.value})}
+                  placeholder="Description de l'accord..."
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium mb-2">Pays partenaire</label>
+                  <input
+                    type="text"
+                    className="w-full p-3 border rounded-xl focus:border-gabon-blue focus:ring-2 focus:ring-gabon-blue/20 outline-none"
+                    value={formData.partner_country}
+                    onChange={e => setFormData({...formData, partner_country: e.target.value})}
+                    placeholder="Ex: France"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium mb-2">Date de signature</label>
+                  <input
+                    type="date"
+                    className="w-full p-3 border rounded-xl focus:border-gabon-blue focus:ring-2 focus:ring-gabon-blue/20 outline-none"
+                    value={formData.signing_date}
+                    onChange={e => setFormData({...formData, signing_date: e.target.value})}
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium mb-2">Institution partenaire</label>
+                <input
+                  type="text"
+                  className="w-full p-3 border rounded-xl focus:border-gabon-blue focus:ring-2 focus:ring-gabon-blue/20 outline-none"
+                  value={formData.partner_institution}
+                  onChange={e => setFormData({...formData, partner_institution: e.target.value})}
+                  placeholder="Ex: Université de Paris"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium mb-2">Document PDF</label>
                 <input
                   type="file"
                   accept=".pdf"
                   className="w-full p-3 border rounded-xl"
                   onChange={e => setFormData({...formData, file: e.target.files[0]})}
                 />
+                {formData.file_url && !formData.file && (
+                  <p className="text-xs text-green-600 mt-1">✓ Un fichier est déjà associé</p>
+                )}
               </div>
-              <div className="flex justify-end gap-3 pt-4">
+
+              <div className="flex justify-end gap-3 pt-4 border-t">
                 <button
                   type="button"
-                  onClick={() => setShowForm(false)}
+                  onClick={resetForm}
                   className="px-4 py-2 text-neutral-gray-dark hover:bg-neutral-gray-light rounded-lg"
                 >
                   Annuler
@@ -257,7 +411,7 @@ const DashboardConventions = () => {
                   disabled={uploading}
                   className="px-4 py-2 bg-gabon-blue text-white rounded-lg hover:bg-blue-700 disabled:opacity-50"
                 >
-                  {uploading ? 'Envoi...' : 'Ajouter'}
+                  {uploading ? 'Enregistrement...' : (editingId ? 'Mettre à jour' : 'Ajouter')}
                 </button>
               </div>
             </form>
