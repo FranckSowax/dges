@@ -37,7 +37,7 @@ const Footer = () => {
                 <img 
                   src="/LOGO-DGES-2-1.png" 
                   alt="Logo DGES Gabon" 
-                  className="h-16 sm:h-20 w-auto object-contain brightness-0 invert"
+                  className="h-16 sm:h-20 w-auto object-contain"
                 />
               </a>
             </div>
