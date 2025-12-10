@@ -20,6 +20,11 @@ const Footer = () => {
     ],
     cooperation: [
       { label: 'Accords de partenariat', href: '/cooperation/accords' }
+    ],
+    legal: [
+      { label: 'Mentions légales', href: '/mentions-legales' },
+      { label: 'Politique de confidentialité', href: '/confidentialite' },
+      { label: 'Conditions d\'utilisation', href: '/conditions' }
     ]
   };
 
