@@ -300,22 +300,37 @@ const Actualites = () => {
                   <p className="text-lg font-medium text-neutral-black mb-6 leading-relaxed">
                     {selectedArticle.excerpt}
                   </p>
+                  
+                  {/* Video Player */}
+                  {selectedArticle.video_url && (
+                    <div className="my-8 rounded-2xl overflow-hidden shadow-lg bg-black">
+                      <video 
+                        src={selectedArticle.video_url} 
+                        controls 
+                        className="w-full h-auto max-h-[500px] mx-auto"
+                        poster={selectedArticle.image_url}
+                      >
+                        Votre navigateur ne supporte pas la lecture de vidéos.
+                      </video>
+                    </div>
+                  )}
+
                   <div className="text-neutral-gray-dark whitespace-pre-wrap leading-relaxed">
                     {selectedArticle.content || "Contenu de l'article non disponible."}
                   </div>
                 </div>
 
-                {/* Gallery Section */}
+                {/* Gallery Section - Scrolling */}
                 {selectedArticle.gallery_images && selectedArticle.gallery_images.length > 0 && (
                   <div className="mt-12 pt-8 border-t border-neutral-gray-light">
                     <h4 className="text-xl font-bold text-neutral-black mb-6">Galerie Photos</h4>
-                    <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                    <div className="flex gap-4 overflow-x-auto pb-6 snap-x snap-mandatory scrollbar-thin scrollbar-thumb-gabon-green/20 hover:scrollbar-thumb-gabon-green/50">
                       {selectedArticle.gallery_images.map((img, idx) => (
-                        <div key={idx} className="aspect-video rounded-xl overflow-hidden bg-neutral-background group cursor-pointer">
+                        <div key={idx} className="flex-shrink-0 w-72 sm:w-96 aspect-video rounded-xl overflow-hidden bg-neutral-background snap-center shadow-md cursor-pointer hover:scale-[1.02] transition-transform" onClick={() => window.open(img, '_blank')}>
                           <img
                             src={img}
                             alt={`Galerie ${idx + 1}`}
-                            className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                            className="w-full h-full object-cover"
                           />
                         </div>
                       ))}

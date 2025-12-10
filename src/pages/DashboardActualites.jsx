@@ -18,6 +18,8 @@ const DashboardActualites = () => {
     title: '',
     content: '',
     image_url: '',
+    video_url: '',
+    gallery_images: [],
     is_featured: false
   });
 
@@ -31,6 +33,8 @@ const DashboardActualites = () => {
         title: selectedNews.title || '',
         content: selectedNews.content || '',
         image_url: selectedNews.image_url || '',
+        video_url: selectedNews.video_url || '',
+        gallery_images: selectedNews.gallery_images || [],
         is_featured: selectedNews.is_featured || false
       });
     } else {
@@ -38,6 +42,8 @@ const DashboardActualites = () => {
         title: '',
         content: '',
         image_url: '',
+        video_url: '',
+        gallery_images: [],
         is_featured: false
       });
     }
@@ -272,6 +278,23 @@ const DashboardActualites = () => {
                   label="Image de couverture"
                   defaultImage={formData.image_url}
                   onUpload={(url) => setFormData({...formData, image_url: url})}
+                />
+              </div>
+
+              <div>
+                <ImageUpload
+                  label="Vidéo (Optionnel - MP4, WebM)"
+                  defaultImage={formData.video_url}
+                  accept="video/*"
+                  bucket="videos"
+                  onUpload={(url) => setFormData({...formData, video_url: url})}
+                />
+              </div>
+
+              <div>
+                <GalleryUpload
+                  images={formData.gallery_images}
+                  onUpdate={(images) => setFormData({...formData, gallery_images: images})}
                 />
               </div>
 
