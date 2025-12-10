@@ -4,6 +4,8 @@ import { motion } from 'framer-motion';
 import { ArrowRight } from 'lucide-react';
 
 const MegaMenu = ({ data }) => {
+  if (!data || !data.sections) return null;
+  
   return (
     <motion.div
       initial={{ opacity: 0, y: 10 }}

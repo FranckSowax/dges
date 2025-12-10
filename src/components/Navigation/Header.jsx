@@ -155,14 +155,14 @@ const Header = () => {
                       </button>
                       
                       {/* Sous-menu accordéon */}
-                      {expandedMobileMenu === item.id && (
+                      {expandedMobileMenu === item.id && item.megaMenu?.sections && (
                         <div className="ml-4 mt-1 mb-2 border-l-2 border-gabon-green-light pl-3 space-y-1">
                           {item.megaMenu.sections.map((section, sIdx) => (
                             <div key={sIdx}>
                               <p className="text-xs font-semibold text-neutral-gray-dark uppercase tracking-wide px-3 py-2">
                                 {section.title}
                               </p>
-                              {section.items.map((subItem, subIdx) => (
+                              {section.items?.map((subItem, subIdx) => (
                                 <Link
                                   key={subIdx}
                                   to={subItem.href}
