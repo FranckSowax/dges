@@ -1,39 +1,44 @@
 import React from 'react';
+import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Users, Building2, Award, TrendingUp } from 'lucide-react';
+import { School, Landmark, Building2, Globe, ArrowRight } from 'lucide-react';
 
 const stats = [
   {
     id: 1,
-    icon: Building2,
-    value: '5',
-    label: 'Universités Publiques',
-    description: 'Établissements d\'enseignement supérieur',
-    color: 'green'
+    icon: School,
+    value: '13',
+    label: 'Établissements Publics',
+    description: 'Universités et Grandes Écoles d\'État',
+    color: 'green',
+    href: '/etablissements-publics'
   },
   {
     id: 2,
-    icon: Award,
-    value: '8',
-    label: 'Grandes Écoles & Instituts Publics',
-    description: 'Formations spécialisées',
-    color: 'blue'
+    icon: Landmark,
+    value: '5',
+    label: 'Établissements RUP',
+    description: 'Reconnus d\'Utilité Publique',
+    color: 'blue',
+    href: '/etablissements-rup'
   },
   {
     id: 3,
     icon: Building2,
     value: '64',
     label: 'Établissements Privés',
-    description: 'Agréés par la DGES',
-    color: 'yellow'
+    description: 'Accrédités par la DGES',
+    color: 'yellow',
+    href: '/etablissements-prives'
   },
   {
     id: 4,
-    icon: Users,
-    value: '77',
-    label: 'Total Établissements',
-    description: 'Public et privé confondus',
-    color: 'green'
+    icon: Globe,
+    value: '3',
+    label: 'Établissements Inter-État',
+    description: 'Institutions internationales',
+    color: 'green',
+    href: '/etablissements-inter-etat'
   }
 ];
 
@@ -65,7 +70,7 @@ const StatsSection = () => {
         </div>
 
         {/* Stats Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5 md:gap-6">
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5 md:gap-6">
           {stats.map((stat, index) => {
             const Icon = stat.icon;
             return (
@@ -77,7 +82,7 @@ const StatsSection = () => {
                 transition={{ duration: 0.5, delay: index * 0.1 }}
                 className="relative group"
               >
-                <div className="card h-full">
+                <Link to={stat.href} className="card h-full flex flex-col cursor-pointer hover:shadow-xl transition-shadow">
                   {/* Icon */}
                   <div className={`w-12 h-12 sm:w-14 sm:h-14 bg-gradient-to-br ${colorClasses[stat.color]} rounded-xl flex items-center justify-center mb-3 sm:mb-4 group-hover:scale-110 transition-transform duration-300`}>
                     <Icon className="w-6 h-6 sm:w-7 sm:h-7 text-white" />
@@ -97,15 +102,21 @@ const StatsSection = () => {
                   </div>
 
                   {/* Label */}
-                  <p className="text-base sm:text-lg font-semibold text-neutral-black mb-1">
+                  <p className="text-base sm:text-lg font-semibold text-neutral-black mb-1 group-hover:text-gabon-green transition-colors">
                     {stat.label}
                   </p>
 
                   {/* Description */}
-                  <p className="text-xs sm:text-sm text-neutral-gray-dark">
+                  <p className="text-xs sm:text-sm text-neutral-gray-dark mb-3">
                     {stat.description}
                   </p>
-                </div>
+
+                  {/* CTA */}
+                  <div className="mt-auto flex items-center text-gabon-green font-medium text-sm group-hover:translate-x-1 transition-transform">
+                    <span>Voir la liste</span>
+                    <ArrowRight className="w-4 h-4 ml-1" />
+                  </div>
+                </Link>
               </motion.div>
             );
           })}

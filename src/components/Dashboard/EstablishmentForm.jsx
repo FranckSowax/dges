@@ -141,6 +141,9 @@ const EstablishmentForm = ({ establishment, type, onClose, onSave }) => {
                 className="w-full px-4 py-2 rounded-lg border border-neutral-gray-light focus:border-gabon-green focus:ring-2 focus:ring-gabon-green/20 outline-none transition-all"
               >
                 <option value="Université">Université</option>
+                <option value="Institut">Institut</option>
+                <option value="Grande École">Grande École</option>
+                <option value="Centre Universitaire">Centre Universitaire</option>
                 <option value="Public">Public</option>
                 <option value="Privé">Privé</option>
                 <option value="RUP">RUP</option>
