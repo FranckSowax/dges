@@ -28,7 +28,7 @@ const EstablishmentsList = ({
         .from('establishments')
         .select('*')
         .eq('is_active', true)
-        .order('display_order', { ascending: true });
+        .order('name', { ascending: true });
 
       // Filter by type if specified
       if (type && type !== 'all') {
