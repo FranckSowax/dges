@@ -30,6 +30,7 @@ import DashboardKnowledge from './pages/DashboardKnowledge.jsx'
 import DashboardOrganigramme from './pages/DashboardOrganigramme.jsx'
 import DashboardResponsables from './pages/DashboardResponsables.jsx'
 import DashboardAttribution from './pages/DashboardAttribution.jsx'
+import DashboardRessources from './pages/DashboardRessources.jsx'
 import './index.css'
 
 ReactDOM.createRoot(document.getElementById('root')).render(
@@ -93,6 +94,7 @@ ReactDOM.createRoot(document.getElementById('root')).render(
         <Route path="/dashboard/etablissements-rup" element={<DashboardEtablissements />} />
         <Route path="/dashboard/etablissements-inter-etat" element={<DashboardEtablissements />} />
         <Route path="/dashboard/cooperation" element={<DashboardConventions />} />
+        <Route path="/dashboard/ressources" element={<DashboardRessources />} />
         <Route path="/dashboard/actualites" element={<DashboardActualites />} />
         </Routes>
       </BrowserRouter>

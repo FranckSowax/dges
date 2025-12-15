@@ -107,11 +107,6 @@ const Header = () => {
 
           {/* Right Actions */}
           <div className="flex items-center space-x-2">
-            {/* Search Icon */}
-            <button className="hidden md:flex items-center justify-center w-9 h-9 rounded-lg hover:bg-neutral-gray-light transition-colors">
-              <Search className="w-5 h-5 text-neutral-gray-dark" />
-            </button>
-
             {/* User Menu - Direct Link */}
             <a
               href="https://admin.dges.ga/"

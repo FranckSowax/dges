@@ -88,6 +88,12 @@ const Sidebar = () => {
       ]
     },
     {
+      title: 'Ressources',
+      items: [
+        { icon: FileText, label: 'Textes Juridiques', path: '/dashboard/ressources' }
+      ]
+    },
+    {
       title: 'Communication',
       items: [
         { icon: Newspaper, label: 'Actualités', path: '/dashboard/actualites' }
