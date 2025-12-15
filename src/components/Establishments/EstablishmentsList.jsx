@@ -1,21 +1,79 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Search, X, MapPin, Phone, Mail, Globe, ExternalLink, Edit, GraduationCap, Loader } from 'lucide-react';
+import { Search, X, MapPin, Phone, Mail, Globe, ExternalLink, Edit, GraduationCap, Loader, Filter, Briefcase, Code, Stethoscope, Scale, Building, Palette, Wrench, BookOpen } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../../supabaseClient';
+
+// Catégories de filières regroupées par famille
+const FILIERE_FAMILIES = {
+  'Commerce & Gestion': {
+    icon: Briefcase,
+    color: 'blue',
+    keywords: ['commerce', 'gestion', 'management', 'marketing', 'comptabilité', 'finance', 'banque', 'assurance', 'économie', 'business', 'entrepreneuriat', 'ressources humaines', 'rh', 'audit', 'contrôle']
+  },
+  'Informatique & Tech': {
+    icon: Code,
+    color: 'indigo',
+    keywords: ['informatique', 'développement', 'programmation', 'web', 'réseaux', 'télécommunications', 'data', 'intelligence artificielle', 'ia', 'cybersécurité', 'système', 'logiciel', 'numérique', 'digital']
+  },
+  'Santé & Médical': {
+    icon: Stethoscope,
+    color: 'red',
+    keywords: ['santé', 'médecine', 'infirmier', 'pharmacie', 'biologie', 'laboratoire', 'soins', 'paramédical', 'sage-femme', 'kinésithérapie', 'nutrition', 'diététique']
+  },
+  'Droit & Juridique': {
+    icon: Scale,
+    color: 'amber',
+    keywords: ['droit', 'juridique', 'notariat', 'avocat', 'justice', 'légal']
+  },
+  'BTP & Génie Civil': {
+    icon: Building,
+    color: 'orange',
+    keywords: ['btp', 'génie civil', 'construction', 'architecture', 'bâtiment', 'travaux publics', 'urbanisme', 'topographie']
+  },
+  'Arts & Communication': {
+    icon: Palette,
+    color: 'pink',
+    keywords: ['art', 'design', 'graphisme', 'communication', 'journalisme', 'audiovisuel', 'média', 'publicité', 'mode', 'photographie']
+  },
+  'Industrie & Technique': {
+    icon: Wrench,
+    color: 'slate',
+    keywords: ['industrie', 'mécanique', 'électricité', 'électronique', 'maintenance', 'production', 'qualité', 'logistique', 'transport', 'pétrole', 'mines', 'énergie']
+  },
+  'Éducation & Formation': {
+    icon: BookOpen,
+    color: 'green',
+    keywords: ['éducation', 'enseignement', 'pédagogie', 'formation', 'lettres', 'langues', 'sciences humaines', 'sociologie', 'psychologie']
+  }
+};
+
+// Fonction pour déterminer la famille d'une filière
+const getFiliereFamily = (filiere) => {
+  const filiereLower = filiere.toLowerCase();
+  for (const [family, config] of Object.entries(FILIERE_FAMILIES)) {
+    if (config.keywords.some(keyword => filiereLower.includes(keyword))) {
+      return family;
+    }
+  }
+  return null;
+};
 
 const EstablishmentsList = ({ 
   type, // 'Public', 'Privé', 'RUP', 'Inter-État', 'Université'
   title,
   subtitle,
   heroGradient = 'from-gabon-green via-gabon-blue to-gabon-green',
-  dashboardPath = '/dashboard/etablissements'
+  dashboardPath = '/dashboard/etablissements',
+  showFiliereFilter = false // Activer le filtre par filières
 }) => {
   const navigate = useNavigate();
   const [establishments, setEstablishments] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedEstablishment, setSelectedEstablishment] = useState(null);
+  const [selectedFamily, setSelectedFamily] = useState(null);
+  const [availableFamilies, setAvailableFamilies] = useState([]);
 
   useEffect(() => {
     fetchEstablishments();
@@ -39,6 +97,20 @@ const EstablishmentsList = ({
 
       if (error) throw error;
       setEstablishments(data || []);
+      
+      // Extraire les familles de filières disponibles
+      if (showFiliereFilter && data) {
+        const familiesSet = new Set();
+        data.forEach(est => {
+          if (est.filieres && Array.isArray(est.filieres)) {
+            est.filieres.forEach(filiere => {
+              const family = getFiliereFamily(filiere);
+              if (family) familiesSet.add(family);
+            });
+          }
+        });
+        setAvailableFamilies(Array.from(familiesSet).sort());
+      }
     } catch (error) {
       console.error('Erreur chargement établissements:', error);
       setEstablishments([]);
@@ -47,10 +119,20 @@ const EstablishmentsList = ({
     }
   };
 
-  const filteredEstablishments = establishments.filter(est =>
-    est.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    est.acronym?.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const filteredEstablishments = establishments.filter(est => {
+    // Filtre par recherche textuelle
+    const matchesSearch = est.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      est.acronym?.toLowerCase().includes(searchTerm.toLowerCase());
+    
+    // Filtre par famille de filières
+    if (selectedFamily && showFiliereFilter) {
+      const hasMatchingFiliere = est.filieres && Array.isArray(est.filieres) && 
+        est.filieres.some(filiere => getFiliereFamily(filiere) === selectedFamily);
+      return matchesSearch && hasMatchingFiliere;
+    }
+    
+    return matchesSearch;
+  });
 
   // Group by sub-type if needed
   const groupedEstablishments = filteredEstablishments.reduce((acc, est) => {
@@ -315,6 +397,63 @@ const EstablishmentsList = ({
           </div>
         </div>
       </section>
+
+      {/* Filtre par famille de filières */}
+      {showFiliereFilter && availableFamilies.length > 0 && (
+        <section className="pb-6">
+          <div className="container-custom">
+            <div className="bg-white rounded-2xl shadow-lg p-6">
+              <div className="flex items-center gap-2 mb-4">
+                <Filter className="w-5 h-5 text-gabon-green" />
+                <h3 className="font-semibold text-neutral-black">Filtrer par domaine de formation</h3>
+              </div>
+              <div className="flex flex-wrap gap-3">
+                <button
+                  onClick={() => setSelectedFamily(null)}
+                  className={`px-4 py-2 rounded-xl font-medium transition-all duration-300 flex items-center gap-2 ${
+                    selectedFamily === null
+                      ? 'bg-gabon-green text-white shadow-lg'
+                      : 'bg-neutral-gray-light/50 text-neutral-gray-dark hover:bg-neutral-gray-light'
+                  }`}
+                >
+                  Tous les domaines
+                </button>
+                {availableFamilies.map((family) => {
+                  const config = FILIERE_FAMILIES[family];
+                  const IconComponent = config?.icon || BookOpen;
+                  const colorClasses = {
+                    blue: selectedFamily === family ? 'bg-blue-600 text-white' : 'bg-blue-50 text-blue-700 hover:bg-blue-100',
+                    indigo: selectedFamily === family ? 'bg-indigo-600 text-white' : 'bg-indigo-50 text-indigo-700 hover:bg-indigo-100',
+                    red: selectedFamily === family ? 'bg-red-600 text-white' : 'bg-red-50 text-red-700 hover:bg-red-100',
+                    amber: selectedFamily === family ? 'bg-amber-600 text-white' : 'bg-amber-50 text-amber-700 hover:bg-amber-100',
+                    orange: selectedFamily === family ? 'bg-orange-600 text-white' : 'bg-orange-50 text-orange-700 hover:bg-orange-100',
+                    pink: selectedFamily === family ? 'bg-pink-600 text-white' : 'bg-pink-50 text-pink-700 hover:bg-pink-100',
+                    slate: selectedFamily === family ? 'bg-slate-600 text-white' : 'bg-slate-50 text-slate-700 hover:bg-slate-100',
+                    green: selectedFamily === family ? 'bg-green-600 text-white' : 'bg-green-50 text-green-700 hover:bg-green-100'
+                  };
+                  return (
+                    <button
+                      key={family}
+                      onClick={() => setSelectedFamily(selectedFamily === family ? null : family)}
+                      className={`px-4 py-2 rounded-xl font-medium transition-all duration-300 flex items-center gap-2 ${colorClasses[config?.color || 'green']}`}
+                    >
+                      <IconComponent className="w-4 h-4" />
+                      {family}
+                    </button>
+                  );
+                })}
+              </div>
+              {selectedFamily && (
+                <div className="mt-4 pt-4 border-t border-neutral-gray-light">
+                  <p className="text-sm text-neutral-gray-dark">
+                    <span className="font-medium">{filteredEstablishments.length}</span> établissement{filteredEstablishments.length > 1 ? 's' : ''} proposant des formations en <span className="font-medium text-gabon-green">{selectedFamily}</span>
+                  </p>
+                </div>
+              )}
+            </div>
+          </div>
+        </section>
+      )}
 
       {/* Stats */}
       <section className="pb-8">

@@ -20,6 +20,7 @@ const EtablissementsPrives = () => {
         subtitle="Établissements d'enseignement supérieur privé au Gabon"
         heroGradient="from-emerald-600 via-teal-500 to-emerald-600"
         dashboardPath="/dashboard/etablissements/prives"
+        showFiliereFilter={true}
       />
 
       <Footer />
