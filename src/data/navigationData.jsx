@@ -120,6 +120,7 @@ export const navigationData = [
   {
     id: 'cooperation',
     label: 'Coopération & Relation internationale',
+    href: '/cooperation/accords',
     megaMenu: {
       sections: [
         {
