@@ -70,16 +70,16 @@ export const navigationData = [
               href: '/etablissements-publics'
             },
             {
-              label: 'Privé',
-              description: 'Établissements privés agréés',
-              icon: <Building2 className="w-5 h-5" />,
-              href: '/etablissements-prives'
-            },
-            {
               label: 'RUP',
               description: 'Reconnus d\'Utilité Publique',
               icon: <Bookmark className="w-5 h-5" />,
               href: '/etablissements-rup'
+            },
+            {
+              label: 'Privé',
+              description: 'Établissements privés agréés',
+              icon: <Building2 className="w-5 h-5" />,
+              href: '/etablissements-prives'
             },
             {
               label: 'Inter-Etat',
