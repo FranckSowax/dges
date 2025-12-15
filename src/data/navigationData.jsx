@@ -177,6 +177,7 @@ export const navigationData = [
   {
     id: 'ressources',
     label: 'Ressources',
+    href: '/ressources/textes-fondamentaux',
     megaMenu: {
       sections: [
         {
